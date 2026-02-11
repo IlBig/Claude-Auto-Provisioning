@@ -1,0 +1,31 @@
+{
+  "name": "claude-auto-provision",
+  "version": "1.0.0",
+  "description": "Analizza qualsiasi progetto e genera automaticamente CLAUDE.md, hook, skill, MCP server e plugin per Claude Code",
+  "keywords": [
+    "claude-code",
+    "auto-provision",
+    "mcp",
+    "ai",
+    "developer-tools",
+    "productivity"
+  ],
+  "author": "IlBig",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IlBig/Claude-Auto-Provisioning.git"
+  },
+  "homepage": "https://github.com/IlBig/Claude-Auto-Provisioning",
+  "bin": {
+    "claude-auto-provision": "./bin/install.mjs"
+  },
+  "files": [
+    "bin/",
+    ".claude/skills/auto-provision/"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "type": "module"
+}
