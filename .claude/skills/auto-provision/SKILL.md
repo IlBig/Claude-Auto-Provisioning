@@ -270,7 +270,7 @@ FILE CHE VERRANNO GENERATI:
 COMPONENTI DA INSTALLARE:
 -------------------------
 Ogni voce è attivabile/disattivabile singolarmente.
-Digita i numeri per cambiare stato (es: "3 5 8"), poi invio per confermare.
+Digita i numeri separati da virgola per cambiare stato (es: "3,5,8"), poi invio per confermare.
 
   [x]  1. [nome MCP/plugin/skill] — [scopo]
           Motivazione: [perché l'analisi lo raccomanda]
@@ -289,7 +289,8 @@ Digita i numeri per cambiare stato (es: "3 5 8"), poi invio per confermare.
   [x]  8. [modulo BMAD] — [scopo]
   [ ]  9. [modulo BMAD] — [scopo]
 
-→ Digita i numeri da cambiare (es: "3 6 9"), oppure invio per confermare.
+→ Digita i numeri separati da virgola (es: "3,6,9"), oppure invio per confermare.
+  Per numeri a due cifre non c'è ambiguità: "2,3" = voci 2 e 3; "23" = voce 23.
 
 FILE ESISTENTI CHE VERRANNO PRESERVATI:
 - [lista]
@@ -299,7 +300,7 @@ FILE ESISTENTI CHE VERRANNO PRESERVATI:
 
 1. **Lista piatta**: Tutti i componenti (MCP server, plugin, skill, moduli BMAD) in un'unica lista numerata sequenziale. Nessun sottogruppo con scelta collettiva.
 2. **Pre-selezione intelligente**: Segna con `[x]` quelli fortemente raccomandati dall'analisi; segna con `[ ]` quelli opzionali o situazionali.
-3. **Toggle individuale**: L'utente digita i numeri dei componenti da invertire (attivare ↔ disattivare). Esempio: se scrive `3 6`, il componente 3 passa da `[x]` a `[ ]` e il 6 da `[ ]` a `[x]`.
+3. **Toggle individuale**: L'utente digita i numeri dei componenti da invertire (attivare ↔ disattivare), **separati da virgola**. Esempio: se scrive `3,6`, il componente 3 passa da `[x]` a `[ ]` e il 6 da `[ ]` a `[x]`. La virgola elimina ambiguità con numeri a due cifre (es: `2,3` = voci 2 e 3; `23` = voce 23).
 4. **Iterativo**: Dopo il toggle, mostra la lista aggiornata e chiedi nuovamente. Ripeti finché l'utente conferma (invio vuoto o "ok"/"conferma").
 5. **Ogni voce motivata**: Ogni raccomandazione deve spiegare PERCHÉ è suggerita basandosi sull'analisi, non "perché è popolare".
 6. **No AskUserQuestion**: Usa solo testo diretto nel chat per la lista e l'interazione. L'utente risponde digitando numeri o "conferma".
