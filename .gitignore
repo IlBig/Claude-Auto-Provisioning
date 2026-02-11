@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code local settings (contiene credenziali/config personali)
+.claude/settings.local.json
+
+# BMAD output artifacts (generati, non versionare)
+_bmad-output/planning-artifacts/*
+_bmad-output/implementation-artifacts/*
+_bmad-output/test-artifacts/*
+!_bmad-output/planning-artifacts/.gitkeep
+!_bmad-output/implementation-artifacts/.gitkeep
+!_bmad-output/test-artifacts/.gitkeep
+
+# Node
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local

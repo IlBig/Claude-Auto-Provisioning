@@ -1,0 +1,11 @@
+{
+  "name": "auto-provision-marketplace",
+  "description": "Plugin Auto-Provision per Claude Code — bootstrapper intelligente per qualsiasi progetto",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "auto-provision",
+      "source": ".."
+    }
+  ]
+}

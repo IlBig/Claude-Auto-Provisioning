@@ -1,0 +1,19 @@
+{
+  "name": "auto-provision",
+  "description": "Analizza qualsiasi progetto e genera automaticamente CLAUDE.md, hook, skill, configurazione MCP server e plugin raccomandati per Claude Code. Un bootstrapper intelligente per ogni codebase.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Big"
+  },
+  "repository": "https://github.com/big/auto-provision",
+  "license": "MIT",
+  "keywords": [
+    "auto-provision",
+    "bootstrap",
+    "project-setup",
+    "claude-code",
+    "mcp",
+    "hooks",
+    "skills"
+  ]
+}
