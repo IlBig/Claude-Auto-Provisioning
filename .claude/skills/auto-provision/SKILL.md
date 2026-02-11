@@ -240,9 +240,11 @@ See [bmad-modules-catalog.md](bmad-modules-catalog.md)
 
 ---
 
-## FASE 3: Presentazione Piano e Conferma
+## FASE 3: Presentazione Piano e Conferma Individuale
 
-Presenta all'utente un piano completo che riflette l'analisi multi-dimensionale:
+Presenta all'utente un piano completo con **lista piatta numerata** dove ogni singolo componente può essere attivato o disattivato individualmente.
+
+**IMPORTANTE**: NON usare AskUserQuestion per la conferma. NON raggruppare in opzioni come "Conferma tutto" o "Solo essenziali". Presenta la lista direttamente nel chat e chiedi all'utente di digitare i numeri per fare toggle.
 
 ```
 ============================================
@@ -267,44 +269,40 @@ FILE CHE VERRANNO GENERATI:
 
 COMPONENTI DA INSTALLARE:
 -------------------------
-(seleziona quelli che vuoi, deseleziona quelli che non vuoi)
+Ogni voce è attivabile/disattivabile singolarmente.
+Digita i numeri per cambiare stato (es: "3 5 8"), poi invio per confermare.
 
-  ESSENZIALI:
-  [x] 1. [nome] — [scopo] — [motivazione dall'analisi]
-  [x] 2. [nome] — [scopo] — [motivazione dall'analisi]
+  [x]  1. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  2. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  3. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  4. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  5. [nome skill community] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [ ]  6. [nome MCP/plugin opzionale] — [scopo]
+          Nota: [quando è utile]
+  [ ]  7. [nome MCP/plugin opzionale] — [scopo]
+          Nota: [quando è utile]
+  [x]  8. [modulo BMAD] — [scopo]
+  [ ]  9. [modulo BMAD] — [scopo]
 
-  QUALITÀ & SICUREZZA:
-  [x] 3. [nome] — [scopo] — [colma lacuna rilevata]
-  [x] 4. [nome] — [scopo] — [colma lacuna rilevata]
-
-  PRESTAZIONI & MONITORING:
-  [x] 5. [nome] — [scopo] — [migliora area debole]
-
-  SVILUPPO & PRODUTTIVITÀ:
-  [x] 6. [nome] — [scopo]
-  [x] 7. [nome] — [scopo]
-
-  SKILL COMMUNITY:
-  [x] 8. [nome] — [scopo]
-  [x] 9. [nome] — [scopo]
-
-  OPZIONALI:
-  [ ] 10. [nome] — [scopo] (se usate [servizio])
-
-  MODULI BMAD (se applicabile):
-  [x] 11. Core — Orchestrazione (obbligatorio)
-  [x] 12. BMM — Agile Development
-  [ ] 13. TEA — Test Architect
-
-→ Indica i numeri da RIMUOVERE o AGGIUNGERE, oppure premi invio per confermare.
+→ Digita i numeri da cambiare (es: "3 6 9"), oppure invio per confermare.
 
 FILE ESISTENTI CHE VERRANNO PRESERVATI:
 - [lista]
 ```
 
-**Ogni raccomandazione deve essere MOTIVATA** dall'analisi. Non suggerire un tool "perché è popolare" — suggeriscilo perché l'analisi ha rilevato un bisogno specifico.
+### Regole per la lista componenti:
 
-**Chiedi conferma esplicita all'utente prima di procedere.**
+1. **Lista piatta**: Tutti i componenti (MCP server, plugin, skill, moduli BMAD) in un'unica lista numerata sequenziale. Nessun sottogruppo con scelta collettiva.
+2. **Pre-selezione intelligente**: Segna con `[x]` quelli fortemente raccomandati dall'analisi; segna con `[ ]` quelli opzionali o situazionali.
+3. **Toggle individuale**: L'utente digita i numeri dei componenti da invertire (attivare ↔ disattivare). Esempio: se scrive `3 6`, il componente 3 passa da `[x]` a `[ ]` e il 6 da `[ ]` a `[x]`.
+4. **Iterativo**: Dopo il toggle, mostra la lista aggiornata e chiedi nuovamente. Ripeti finché l'utente conferma (invio vuoto o "ok"/"conferma").
+5. **Ogni voce motivata**: Ogni raccomandazione deve spiegare PERCHÉ è suggerita basandosi sull'analisi, non "perché è popolare".
+6. **No AskUserQuestion**: Usa solo testo diretto nel chat per la lista e l'interazione. L'utente risponde digitando numeri o "conferma".
 
 ---
 
