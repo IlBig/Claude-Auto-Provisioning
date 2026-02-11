@@ -12,6 +12,7 @@ const sourceDir = join(packageRoot, ".claude", "skills", "auto-provision");
 const targetBase = process.cwd();
 const targetDir = join(targetBase, ".claude", "skills", "auto-provision");
 
+// --- Colors ---
 const RESET = "\x1b[0m";
 const GREEN = "\x1b[32m";
 const RED = "\x1b[31m";
@@ -19,17 +20,68 @@ const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
 const DIM = "\x1b[2m";
 const BOLD = "\x1b[1m";
+const WHITE = "\x1b[37m";
 
-// --- Post-install actions catalog ---
-const POST_ACTIONS = [
+// --- BMAD Modules Guide ---
+const BMAD_MODULES = [
   {
-    id: "bmad",
-    name: "BMAD Method",
-    description: "Metodo Agile-AI con 12 agenti e 36+ workflow",
-    command: "npx",
-    args: ["bmad-method", "install"],
-    detect: () => existsSync(join(targetBase, "_bmad")),
-    detectMessage: "già installato",
+    id: "core",
+    name: "BMad Core",
+    emoji: "🟢",
+    required: true,
+    description: `Il motore fondamentale del framework. Fornisce l'orchestrazione degli
+     agenti AI, il sistema di configurazione, la compilazione degli agenti e
+     le policy di base. Tutti gli altri moduli si appoggiano su di esso.`,
+  },
+  {
+    id: "bmm",
+    name: "BMad Method (BMM)",
+    emoji: "📋",
+    required: false,
+    description: `Agile-AI Driven Development. Il modulo principale per lo sviluppo
+     software agile guidato da AI. Include ~12 agenti specializzati (Analyst,
+     PM, Architect, Developer, Scrum Master, QA, UX Designer, Tech Writer)
+     e 50+ workflow. Copre l'intero ciclo di vita: dall'analisi dei requisiti
+     alla pianificazione, architettura, implementazione e testing.`,
+  },
+  {
+    id: "bmb",
+    name: "BMad Builder (BMB)",
+    emoji: "🔧",
+    required: false,
+    description: `Permette di creare agenti, workflow e moduli personalizzati. Trasforma
+     BMad da un framework fisso in una piattaforma estensibile. Puoi creare
+     soluzioni specifiche per qualsiasi dominio (legale, medico, finanziario,
+     educativo) e condividerle con la community.`,
+  },
+  {
+    id: "cis",
+    name: "Creative Intelligence Suite (CIS)",
+    emoji: "💡",
+    required: false,
+    description: `Modulo per il pensiero creativo e strategico. Include 5 workflow
+     interattivi (brainstorming, design thinking, problem solving, strategia
+     d'innovazione, storytelling) con oltre 150 tecniche creative e 5 agenti
+     specializzati con stili di facilitazione unici.`,
+  },
+  {
+    id: "gamedev",
+    name: "Game Dev Studio",
+    emoji: "🎮",
+    required: false,
+    description: `Modulo opzionale per lo sviluppo di videogiochi. Aggiunge agenti
+     specifici come Game Architect, Game Designer e Game Developer, con
+     workflow dedicati ai Game Design Document (GDD) e alla meccanica di gioco.`,
+  },
+  {
+    id: "tea",
+    name: "Test Architect (TEA)",
+    emoji: "🧪",
+    required: false,
+    description: `Modulo standalone per testing e quality assurance avanzati. Si integra
+     con strumenti come Playwright per test fixture-based di web app.
+     Approfondisce gli aspetti di testing oltre quanto già offerto dal QA
+     agent base nel modulo BMM.`,
   },
 ];
 
@@ -53,12 +105,16 @@ function runCommand(command, args) {
   });
 }
 
+function printSeparator() {
+  console.log(`  ${DIM}${"─".repeat(56)}${RESET}`);
+}
+
 // --- Main ---
 async function main() {
   console.log("");
-  console.log(`${BOLD}${CYAN}╔══════════════════════════════════════════╗${RESET}`);
-  console.log(`${BOLD}${CYAN}║     Claude Auto-Provision Installer      ║${RESET}`);
-  console.log(`${BOLD}${CYAN}╚══════════════════════════════════════════╝${RESET}`);
+  console.log(`${BOLD}${CYAN}╔══════════════════════════════════════════════════════════════╗${RESET}`);
+  console.log(`${BOLD}${CYAN}║              Claude Auto-Provision Installer                 ║${RESET}`);
+  console.log(`${BOLD}${CYAN}╚══════════════════════════════════════════════════════════════╝${RESET}`);
   console.log("");
 
   // Prevent installing into the package's own directory
@@ -78,12 +134,16 @@ async function main() {
     process.exit(1);
   }
 
-  // --- Step 1: Install skill files ---
-  console.log(`${BOLD}[1/2] Installazione skill auto-provision${RESET}`);
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+  // ============================================================
+  // STEP 1: Install skill files
+  // ============================================================
+  console.log(`${BOLD}  [1/2] Installazione skill /auto-provision${RESET}`);
   console.log("");
 
   if (existsSync(targetDir) && readdirSync(targetDir).length > 0) {
-    console.log(`${YELLOW}  Auto-provision già presente — aggiornamento file...${RESET}`);
+    console.log(`  ${YELLOW}Auto-provision già presente — aggiornamento file...${RESET}`);
   }
 
   mkdirSync(targetDir, { recursive: true });
@@ -97,76 +157,93 @@ async function main() {
   });
   console.log("");
 
-  // --- Step 2: Post-install actions ---
-  console.log(`${BOLD}[2/2] Componenti aggiuntivi${RESET}`);
-  console.log("");
+  // ============================================================
+  // STEP 2: BMAD Method
+  // ============================================================
+  const bmadAlreadyInstalled = existsSync(join(targetBase, "_bmad"));
 
-  const available = [];
-  for (const action of POST_ACTIONS) {
-    if (action.detect()) {
-      console.log(`  ${DIM}${action.name}: ${action.detectMessage}${RESET}`);
-    } else {
-      available.push(action);
-    }
-  }
-
-  if (available.length === 0) {
-    console.log(`  ${DIM}Nessun componente aggiuntivo da installare.${RESET}`);
+  if (bmadAlreadyInstalled) {
+    console.log(`${BOLD}  [2/2] BMAD Method${RESET}`);
+    console.log(`  ${DIM}Già installato (directory _bmad/ presente)${RESET}`);
+    console.log("");
   } else {
-    console.log(`  Componenti disponibili:`);
+    console.log(`${BOLD}  [2/2] BMAD Method — Framework AI-Driven Development${RESET}`);
     console.log("");
-    available.forEach((a, i) => {
-      console.log(`    ${BOLD}${i + 1}.${RESET} ${a.name} — ${a.description}`);
-      console.log(`       ${DIM}${a.command} ${a.args.join(" ")}${RESET}`);
+    console.log(`  ${WHITE}BMAD è un framework che fornisce agenti AI specializzati,`);
+    console.log(`  workflow strutturati e metodologie per lo sviluppo software.${RESET}`);
+    console.log(`  ${WHITE}Scegli i moduli più adatti al tuo progetto.${RESET}`);
+    console.log("");
+
+    // --- Show module guide ---
+    console.log(`${BOLD}${CYAN}  ┌──────────────────────────────────────────────────────────┐${RESET}`);
+    console.log(`${BOLD}${CYAN}  │                    Moduli Disponibili                    │${RESET}`);
+    console.log(`${BOLD}${CYAN}  └──────────────────────────────────────────────────────────┘${RESET}`);
+    console.log("");
+
+    BMAD_MODULES.forEach((mod, i) => {
+      const tag = mod.required ? `${GREEN}sempre installato${RESET}` : `${DIM}opzionale${RESET}`;
+      console.log(`  ${mod.emoji}  ${BOLD}${mod.name}${RESET}  ${tag}`);
+      // Print description lines with proper indentation
+      const lines = mod.description.split("\n").map((l) => l.trim());
+      lines.forEach((line) => {
+        if (line) console.log(`      ${DIM}${line}${RESET}`);
+      });
+      if (i < BMAD_MODULES.length - 1) console.log("");
     });
+
+    console.log("");
+    printSeparator();
     console.log("");
 
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-
-    const answer = await ask(
+    const bmadAnswer = await ask(
       rl,
-      `  Installa tutti? ${BOLD}[S/n]${RESET} oppure indica i numeri (es: 1,2): `
+      `  Vuoi installare BMAD? ${BOLD}[S/n]${RESET}: `
     );
-    rl.close();
 
-    const trimmed = answer.trim().toLowerCase();
+    const bmadTrimmed = bmadAnswer.trim().toLowerCase();
+    const wantsBmad =
+      bmadTrimmed === "" ||
+      bmadTrimmed === "s" ||
+      bmadTrimmed === "si" ||
+      bmadTrimmed === "y" ||
+      bmadTrimmed === "yes";
 
-    let selected = [];
-    if (trimmed === "" || trimmed === "s" || trimmed === "si" || trimmed === "y" || trimmed === "yes") {
-      selected = available;
-    } else if (trimmed === "n" || trimmed === "no") {
-      selected = [];
+    if (wantsBmad) {
+      console.log("");
+      console.log(`  ${CYAN}→${RESET} Avvio installazione ${BOLD}BMAD Method${RESET}...`);
+      console.log(`    ${DIM}L'installer BMAD ti chiederà quali moduli attivare.${RESET}`);
+      console.log("");
+
+      try {
+        await runCommand("npx", ["bmad-method", "install"]);
+        console.log("");
+        console.log(`  ${GREEN}✓${RESET} BMAD Method installato`);
+      } catch (err) {
+        console.log(`  ${RED}✗${RESET} BMAD Method: ${err.message}`);
+        console.log(`    ${DIM}Puoi installarlo manualmente con: npx bmad-method install${RESET}`);
+      }
     } else {
-      const nums = trimmed.split(/[,\s]+/).map((n) => parseInt(n, 10) - 1);
-      selected = nums.filter((n) => n >= 0 && n < available.length).map((n) => available[n]);
+      console.log("");
+      console.log(`  ${DIM}BMAD non installato. Puoi farlo dopo con: npx bmad-method install${RESET}`);
     }
 
     console.log("");
-
-    for (const action of selected) {
-      console.log(`  ${CYAN}→${RESET} Installazione ${BOLD}${action.name}${RESET}...`);
-      console.log("");
-      try {
-        await runCommand(action.command, action.args);
-        console.log("");
-        console.log(`  ${GREEN}✓${RESET} ${action.name} installato`);
-      } catch (err) {
-        console.log(`  ${RED}✗${RESET} ${action.name}: ${err.message}`);
-      }
-      console.log("");
-    }
   }
 
-  // --- Summary ---
+  rl.close();
+
+  // ============================================================
+  // SUMMARY
+  // ============================================================
+  console.log(`${BOLD}${GREEN}  ══════════════════════════════════════════════════════════${RESET}`);
+  console.log(`${BOLD}${GREEN}    Installazione completata!${RESET}`);
+  console.log(`${BOLD}${GREEN}  ══════════════════════════════════════════════════════════${RESET}`);
   console.log("");
-  console.log(`${BOLD}${GREEN}══════════════════════════════════════════${RESET}`);
-  console.log(`${BOLD}${GREEN}  Installazione completata!${RESET}`);
-  console.log(`${BOLD}${GREEN}══════════════════════════════════════════${RESET}`);
-  console.log("");
-  console.log(`${BOLD}Prossimi passi:${RESET}`);
-  console.log(`  1. Avvia Claude Code:  ${CYAN}claude${RESET}`);
-  console.log(`  2. Esegui:             ${CYAN}/auto-provision${RESET}`);
-  console.log(`     Il sistema analizzerà il progetto e configurerà tutto.`);
+  console.log(`${BOLD}  Prossimi passi:${RESET}`);
+  console.log(`    1. Avvia Claude Code:  ${CYAN}claude${RESET}`);
+  console.log(`    2. Esegui:             ${CYAN}/auto-provision${RESET}`);
+  console.log(`       Il sistema analizzerà il progetto e configurerà tutto`);
+  console.log(`       automaticamente: CLAUDE.md, hook, skill, MCP server, plugin.`);
   console.log("");
 }
 
