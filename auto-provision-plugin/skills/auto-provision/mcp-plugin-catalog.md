@@ -208,8 +208,95 @@ Raccomanda solo se ci sono indicatori espliciti di uso team:
 
 ### Mai Raccomandare Senza Indicatori
 - Non suggerire MCP per servizi non presenti nel progetto
-- Non suggerire più di 8-10 MCP/plugin totali
 - Meglio pochi e utili che troppi e confusionari
+
+---
+
+## Marketplace e Skill Esterni
+
+### wshobson/agents — Mega Marketplace (73 plugin, 112 agenti, 146 skill)
+**Condizione**: Raccomandare SEMPRE come marketplace aggiuntivo.
+Contiene plugin per qualsiasi esigenza: Python, Kubernetes, security, blockchain, full-stack, code review, debugging, deployment.
+
+**Installazione marketplace**:
+```bash
+/plugin marketplace add wshobson/agents
+```
+
+**Plugin consigliati in base al progetto**:
+
+| Tipo Progetto | Plugin da installare |
+|---------------|---------------------|
+| **Python** | `/plugin install python-development@wshobson-agents` |
+| **Kubernetes/DevOps** | `/plugin install kubernetes-operations@wshobson-agents` |
+| **Full-stack** | `/plugin install full-stack-orchestration@wshobson-agents` |
+| **Security-focused** | Cerca plugin security nel marketplace |
+| **Code review** | `/plugin install agent-teams@wshobson-agents` (review multi-agente) |
+
+**Nota**: Dopo aver aggiunto il marketplace, i plugin specifici vengono selezionati dall'utente nella lista interattiva.
+
+---
+
+### obra/superpowers — Skill di Sviluppo Avanzate
+**Condizione**: Raccomandare SEMPRE per progetti software.
+
+#### systematic-debugging
+Metodologia strutturata per il debugging: root cause analysis obbligatoria prima di qualsiasi fix. Quattro fasi: investigazione, analisi pattern, ipotesi e test, implementazione.
+
+**Installazione**: Copiare la skill dal repository
+```bash
+# Clona e copia la skill
+git clone --depth 1 --filter=blob:none --sparse https://github.com/obra/superpowers.git /tmp/superpowers
+cd /tmp/superpowers && git sparse-checkout set skills/systematic-debugging
+cp -r skills/systematic-debugging .claude/skills/
+rm -rf /tmp/superpowers
+```
+
+#### using-git-worktrees
+Crea workspace git isolati per sviluppo concorrente su branch multipli. Gestisce directory, verifica safety, setup automatico per tipo progetto (Node, Rust, Python, Go).
+
+**Installazione**: Come sopra ma con `skills/using-git-worktrees`
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/obra/superpowers.git /tmp/superpowers
+cd /tmp/superpowers && git sparse-checkout set skills/using-git-worktrees
+cp -r skills/using-git-worktrees .claude/skills/
+rm -rf /tmp/superpowers
+```
+
+---
+
+### vercel-labs/agent-browser — Automazione Browser per AI
+**Condizione**: Raccomandare per progetti web (frontend o full-stack).
+
+Skill CLI per automazione browser: navigazione, compilazione form, click, estrazione dati, screenshot, testing web. Supporta multi-sessione, persistenza stato, mobile testing.
+
+**Installazione**:
+```bash
+git clone --depth 1 --filter=blob:none --sparse https://github.com/vercel-labs/agent-browser.git /tmp/agent-browser
+cd /tmp/agent-browser && git sparse-checkout set skills/agent-browser
+cp -r skills/agent-browser .claude/skills/
+rm -rf /tmp/agent-browser
+```
+
+---
+
+## Regole di Selezione Skill Esterni
+
+Nella lista interattiva, presenta le skill esterne come categoria separata:
+
+```
+SKILL ESTERNE (dalla community):
+  [x] N. wshobson/agents marketplace — 73 plugin specializzati (aggiunge il marketplace)
+  [x] N. systematic-debugging — Debug con root cause analysis
+  [x] N. git-worktrees — Workspace git isolati per sviluppo parallelo
+  [ ] N. agent-browser — Automazione browser per web testing
+```
+
+**Pre-selezione**:
+- `wshobson/agents` marketplace: SEMPRE pre-selezionato
+- `systematic-debugging`: SEMPRE pre-selezionato (utile per qualsiasi progetto)
+- `git-worktrees`: Pre-selezionato se il progetto usa Git
+- `agent-browser`: Pre-selezionato SOLO se progetto web
 
 ---
 

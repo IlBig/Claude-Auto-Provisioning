@@ -226,7 +226,19 @@ Se un'installazione fallisce, segnala l'errore e prosegui con le successive.
 
 **IMPORTANTE**: L'installazione deve essere COMPLETAMENTE AUTOMATICA dopo la conferma dell'utente. Non fornire comandi da copiare — esegui tutto direttamente.
 
-### 4.5 Generare Configurazione Aggiuntiva
+### 4.5 Proporre e Installare Moduli BMAD (opzionale)
+Carica il catalogo moduli BMAD:
+See [bmad-modules-catalog.md](bmad-modules-catalog.md)
+
+Questa fase è **opzionale** — attivala quando:
+- Il progetto è software in sviluppo attivo e beneficerebbe di una metodologia strutturata
+- L'utente chiede esplicitamente di installare BMAD
+- Il progetto non ha già BMAD installato (controlla se esiste `_bmad/` directory)
+
+Se applicabile, presenta la lista dei moduli BMAD con la stessa logica delle altre selezioni:
+lista checkbox → utente seleziona/deseleziona → installazione automatica.
+
+### 4.6 Generare Configurazione Aggiuntiva
 Basandoti sull'analisi, valuta se generare:
 - `.claude/settings.local.json` per configurazioni locali (aggiungere a .gitignore se presente)
 - Note su configurazioni team-level vs personali
