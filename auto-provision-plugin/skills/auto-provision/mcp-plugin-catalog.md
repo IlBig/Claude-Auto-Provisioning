@@ -218,41 +218,68 @@ Raccomanda solo se ci sono indicatori espliciti di uso team:
 Quando presenti le raccomandazioni MCP/Plugin all'utente, usa questo formato:
 
 ```
-MCP SERVER E PLUGIN RACCOMANDATI:
+MCP SERVER, PLUGIN E ESTENSIONI:
 ---------------------------------
+Seleziona quelli che vuoi installare. Rimuovi i numeri che non ti servono.
 
-ESSENZIALI (da installare subito):
-  - [LSP]: [linguaggio] — Intelligenza di codice
-    → /plugin install [nome]@claude-plugins-official
-  - [GitHub]: Version control
-    → /plugin install github@claude-plugins-official
-  - [Database]: [tipo DB] management
-    → claude mcp add [comando]
+ESSENZIALI (pre-selezionati):
+  [x] 1. [LSP] [linguaggio] — Intelligenza di codice
+  [x] 2. [GitHub] — Version control
+  [x] 3. [Database] [tipo DB] — Database management
 
-CONSIGLIATI (molto utili per questo progetto):
-  - [nome]: [scopo]
-    → [comando installazione]
+CONSIGLIATI (pre-selezionati):
+  [x] 4. [nome] — [scopo]
+  [x] 5. [nome] — [scopo]
 
-OPZIONALI (utili se il team usa questi servizi):
-  - [nome]: [scopo] — "Se usate [servizio]"
-    → [comando installazione]
+OPZIONALI (non selezionati):
+  [ ] 6. [nome] — [scopo] (se usate [servizio])
+  [ ] 7. [nome] — [scopo] (se usate [servizio])
 
-Vuoi che proceda con l'installazione dei server ESSENZIALI?
+Indica i numeri da RIMUOVERE o AGGIUNGERE, oppure premi invio per confermare.
 ```
+
+Dopo la conferma dell'utente, procedi con l'installazione automatica.
 
 ---
 
-## Generazione .mcp.json
+## Installazione Automatica
 
-Se l'utente conferma, genera un file `.mcp.json` nella root del progetto con tutti i server MCP selezionati. Questo file è condivisibile via Git.
+Dopo che l'utente ha confermato la selezione, installa TUTTO automaticamente:
 
+### Plugin (dal marketplace ufficiale)
+Esegui via Bash:
+```bash
+claude mcp add --transport http <nome> <url>
+```
+oppure usa il comando di installazione plugin appropriato.
+
+### MCP Server Stdio (locali)
+Genera il file `.mcp.json` nella root del progetto con tutti i server selezionati:
 ```json
 {
   "mcpServers": {
-    "server1": { ... },
-    "server2": { ... }
+    "server1": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@pacchetto/server"],
+      "env": { "VAR": "${VAR}" }
+    }
   }
 }
 ```
 
-**Nota**: Le credenziali (API key, token) devono usare variabili d'ambiente `${VAR}`, mai valori hardcoded. Suggerisci all'utente di creare un `.env` o di configurare le variabili nel sistema.
+### MCP Server HTTP (remoti)
+Esegui via Bash:
+```bash
+claude mcp add --transport http <nome> <url>
+```
+
+### Gestione Credenziali
+- Le credenziali devono usare variabili d'ambiente `${VAR}`, **mai valori hardcoded**
+- Se un server richiede credenziali, installalo comunque e segnala nel report finale quali variabili d'ambiente configurare
+- Non chiedere credenziali all'utente durante l'installazione — installa e basta
+
+### Gestione Errori
+- Se un'installazione fallisce, segnala l'errore e **prosegui con le successive**
+- Non interrompere il flusso per un singolo errore
+- Raccogli tutti gli errori e riportali nel report finale

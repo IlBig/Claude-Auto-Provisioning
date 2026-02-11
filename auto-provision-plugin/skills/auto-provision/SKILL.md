@@ -141,17 +141,20 @@ FILE CHE VERRANNO GENERATI:
    - [nome-skill]: [descrizione]
    - ...
 
-4. .mcp.json
-   MCP Server configurati:
-   - [nome]: [scopo]
+4. MCP Server, Plugin e Estensioni da installare:
+   (seleziona quelli che vuoi, deseleziona quelli che non vuoi)
 
-5. Plugin e MCP raccomandati (comandi da eseguire):
    ESSENZIALI:
-   - [nome]: [scopo] → [comando]
+   [x] 1. [nome] — [scopo]
+   [x] 2. [nome] — [scopo]
    CONSIGLIATI:
-   - [nome]: [scopo] → [comando]
+   [x] 3. [nome] — [scopo]
+   [x] 4. [nome] — [scopo]
    OPZIONALI:
-   - [nome]: [scopo] → [comando]
+   [ ] 5. [nome] — [scopo] (se usate [servizio])
+   [ ] 6. [nome] — [scopo] (se usate [servizio])
+
+   → Indica i numeri da RIMUOVERE, oppure conferma per installare tutti i selezionati.
 
 FILE ESISTENTI CHE VERRANNO PRESERVATI:
 - [lista file che non verranno toccati]
@@ -193,22 +196,35 @@ Seleziona e genera le skill appropriate dal catalogo. Crea ogni skill come:
 
 Se la directory `.claude/skills/` contiene già skill, **non sovrascriverle**.
 
-### 4.4 Raccomandare e Configurare MCP Server e Plugin
+### 4.4 Installare MCP Server, Plugin e Estensioni
 Carica il catalogo MCP e Plugin:
 See [mcp-plugin-catalog.md](mcp-plugin-catalog.md)
 
-Basandoti sul profilo progetto, seleziona MCP server e plugin dal catalogo seguendo le regole di selezione. Organizza le raccomandazioni in tre livelli:
+Basandoti sul profilo progetto, seleziona MCP server e plugin dal catalogo seguendo le regole di selezione.
 
-1. **ESSENZIALI**: LSP per il linguaggio, GitHub plugin, database MCP (se presente)
-2. **CONSIGLIATI**: Fortemente utili per il tipo specifico di progetto
-3. **OPZIONALI**: Utili se il team usa determinati servizi
+#### Flusso interattivo di selezione e installazione:
 
-Presenta le raccomandazioni all'utente con i comandi di installazione. Se l'utente conferma:
+**PASSO 1 — Presenta la lista completa con checkbox:**
+Mostra all'utente una lista numerata organizzata in tre livelli:
+- **ESSENZIALI** (pre-selezionati `[x]`): LSP per il linguaggio, GitHub plugin, database MCP (se presente)
+- **CONSIGLIATI** (pre-selezionati `[x]`): Fortemente utili per il tipo specifico di progetto
+- **OPZIONALI** (non selezionati `[ ]`): Utili se il team usa determinati servizi
 
-- Genera il file `.mcp.json` nella root del progetto per i server MCP di tipo stdio
-- Fornisci i comandi `claude mcp add` per server HTTP (richiedono autenticazione)
-- Fornisci i comandi `/plugin install` per i plugin raccomandati
-- **Non installare nulla automaticamente** — fornisci i comandi pronti per copia-incolla
+Per ogni voce mostra: numero, nome, scopo, tipo (Plugin/MCP Server/Estensione).
+
+**PASSO 2 — Chiedi all'utente quali rimuovere o aggiungere:**
+Chiedi: "Indica i numeri da RIMUOVERE dalla selezione, oppure da AGGIUNGERE tra gli opzionali. Premi invio per confermare la lista così com'è."
+
+**PASSO 3 — Installa AUTOMATICAMENTE tutto ciò che è selezionato:**
+Per ogni elemento confermato, esegui automaticamente il comando appropriato:
+- **Plugin**: Esegui `claude mcp add` o il comando di installazione plugin via Bash
+- **MCP Server stdio**: Genera `.mcp.json` nella root del progetto con tutti i server
+- **MCP Server HTTP**: Esegui `claude mcp add --transport http` via Bash
+- **MCP Server con credenziali**: Installa il server e avvisa l'utente che dovrà configurare le credenziali (API key, token) separatamente
+
+Se un'installazione fallisce, segnala l'errore e prosegui con le successive.
+
+**IMPORTANTE**: L'installazione deve essere COMPLETAMENTE AUTOMATICA dopo la conferma dell'utente. Non fornire comandi da copiare — esegui tutto direttamente.
 
 ### 4.5 Generare Configurazione Aggiuntiva
 Basandoti sull'analisi, valuta se generare:
@@ -238,24 +254,26 @@ HOOK ATTIVI:
 SKILL DISPONIBILI:
 - /[nome-skill]: [descrizione]
 
-MCP SERVER CONFIGURATI (.mcp.json):
-- [nome]: [scopo]
+INSTALLATI AUTOMATICAMENTE:
+  Plugin:
+  ✓ [nome] — installato
+  ✓ [nome] — installato
+  MCP Server:
+  ✓ [nome] — configurato in .mcp.json
+  ✓ [nome] — installato via claude mcp add
+  Errori (se presenti):
+  ✗ [nome] — [motivo errore]
 
-COMANDI DA ESEGUIRE (copia-incolla):
-Plugin da installare:
-  /plugin install [nome]@claude-plugins-official
-  /plugin install [nome]@claude-plugins-official
+CREDENZIALI DA CONFIGURARE:
+- [nome-server]: imposta variabile d'ambiente [VAR_NAME]
+- [nome-server]: imposta variabile d'ambiente [VAR_NAME]
 
-MCP Server remoti (richiedono autenticazione):
-  claude mcp add --transport http [nome] [url]
-
-PROSSIMI PASSI CONSIGLIATI:
+PROSSIMI PASSI:
 1. Rivedi CLAUDE.md e personalizza le sezioni
 2. Testa gli hook con una modifica di prova
 3. Prova le skill generate con /[nome-skill]
-4. Installa i plugin raccomandati con i comandi sopra
-5. Configura i MCP server che richiedono credenziali
-6. [suggerimenti specifici per il progetto]
+4. Configura le credenziali elencate sopra (se presenti)
+5. [suggerimenti specifici per il progetto]
 ```
 
 ---
