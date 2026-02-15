@@ -77,7 +77,7 @@ Tenta il fetch da fonti live per dati aggiornati:
 WebSearch: "site:registry.modelcontextprotocol.io [esigenza]"
 WebSearch: "site:smithery.ai [esigenza] MCP server"
 WebSearch: "site:glama.ai/mcp [esigenza]"
-WebSearch: "claude code [tipo-componente] [esigenza] 2026"
+WebSearch: "claude code [tipo-componente] [esigenza]"
 ```
 
 Se le fonti live non sono raggiungibili, usa solo i cataloghi statici. I dati live hanno precedenza.

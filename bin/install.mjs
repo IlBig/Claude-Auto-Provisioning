@@ -8,11 +8,12 @@ import { spawn } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "..");
-const sourceDir = join(packageRoot, ".claude", "skills", "auto-provision");
-const sourceNeedDir = join(packageRoot, ".claude", "skills", "auto-provision-need");
 const targetBase = process.cwd();
-const targetDir = join(targetBase, ".claude", "skills", "auto-provision");
-const targetNeedDir = join(targetBase, ".claude", "skills", "auto-provision-need");
+
+const SKILLS = [
+  { name: "auto-provision", label: "/auto-provision" },
+  { name: "auto-provision-need", label: "/auto-provision-need" },
+];
 
 // --- Colors ---
 const RESET = "\x1b[0m";
@@ -111,6 +112,23 @@ function printSeparator() {
   console.log(`  ${DIM}${"─".repeat(56)}${RESET}`);
 }
 
+function installSkill(skillName) {
+  const src = join(packageRoot, ".claude", "skills", skillName);
+  const dest = join(targetBase, ".claude", "skills", skillName);
+
+  mkdirSync(dest, { recursive: true });
+  cpSync(src, dest, { recursive: true });
+
+  const files = readdirSync(dest).filter((f) => f.endsWith(".md"));
+  console.log(`  ${GREEN}✓${RESET} Installato in: ${BOLD}.claude/skills/${skillName}/${RESET}`);
+  console.log(`  ${GREEN}✓${RESET} File copiati: ${files.length}`);
+  files.forEach((f) => {
+    console.log(`    ${CYAN}→${RESET} ${f}`);
+  });
+
+  return dest;
+}
+
 // --- Main ---
 async function main() {
   console.log("");
@@ -131,6 +149,7 @@ async function main() {
   }
 
   // Check if source files exist
+  const sourceDir = join(packageRoot, ".claude", "skills", "auto-provision");
   if (!existsSync(sourceDir)) {
     console.error("Errore: file sorgente non trovati. Reinstalla il pacchetto.");
     process.exit(1);
@@ -141,30 +160,18 @@ async function main() {
   // ============================================================
   // STEP 1: Install skill files
   // ============================================================
-  console.log(`${BOLD}  [1/2] Installazione skill /auto-provision e /auto-provision-need${RESET}`);
+  const skillLabels = SKILLS.map((s) => s.label).join(" e ");
+  console.log(`${BOLD}  [1/2] Installazione skill ${skillLabels}${RESET}`);
   console.log("");
 
-  if (existsSync(targetDir) && readdirSync(targetDir).length > 0) {
+  const firstDest = join(targetBase, ".claude", "skills", SKILLS[0].name);
+  if (existsSync(firstDest) && readdirSync(firstDest).length > 0) {
     console.log(`  ${YELLOW}Auto-provision già presente — aggiornamento file...${RESET}`);
   }
 
-  mkdirSync(targetDir, { recursive: true });
-  cpSync(sourceDir, targetDir, { recursive: true });
-  mkdirSync(targetNeedDir, { recursive: true });
-  cpSync(sourceNeedDir, targetNeedDir, { recursive: true });
-
-  const installedFiles = readdirSync(targetDir).filter((f) => f.endsWith(".md"));
-  const installedNeedFiles = readdirSync(targetNeedDir).filter((f) => f.endsWith(".md"));
-  console.log(`  ${GREEN}✓${RESET} Installato in: ${BOLD}.claude/skills/auto-provision/${RESET}`);
-  console.log(`  ${GREEN}✓${RESET} File copiati: ${installedFiles.length}`);
-  installedFiles.forEach((f) => {
-    console.log(`    ${CYAN}→${RESET} ${f}`);
-  });
-  console.log(`  ${GREEN}✓${RESET} Installato in: ${BOLD}.claude/skills/auto-provision-need/${RESET}`);
-  console.log(`  ${GREEN}✓${RESET} File copiati: ${installedNeedFiles.length}`);
-  installedNeedFiles.forEach((f) => {
-    console.log(`    ${CYAN}→${RESET} ${f}`);
-  });
+  for (const skill of SKILLS) {
+    installSkill(skill.name);
+  }
   console.log("");
 
   // ============================================================
@@ -257,6 +264,7 @@ async function main() {
   console.log("");
   console.log(`    ${DIM}Oppure, per installare componenti specifici on-demand:${RESET}`);
   console.log(`       ${CYAN}/auto-provision-need ${DIM}<descrizione esigenza>${RESET}`);
+  console.log(`       ${DIM}(es: /auto-provision-need "linter per TypeScript")${RESET}`);
   console.log("");
 }
 

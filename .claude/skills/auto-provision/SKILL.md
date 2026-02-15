@@ -213,7 +213,7 @@ WebSearch: "site:glama.ai/mcp [framework-rilevato]"
 #### Plugin Claude Code
 Usa WebSearch per trovare plugin aggiornati:
 ```
-WebSearch: "claude code plugin [framework-rilevato] 2026"
+WebSearch: "claude code plugin [framework-rilevato]"
 WebSearch: "site:github.com claude-code plugin [tech-stack]"
 ```
 
@@ -227,7 +227,7 @@ WebFetch: "https://raw.githubusercontent.com/wshobson/agents/main/README.md"
 #### Skill Community
 Usa WebSearch per trovare skill specifiche:
 ```
-WebSearch: "claude code skill [framework] [esigenza-specifica] 2026"
+WebSearch: "claude code skill [framework] [esigenza-specifica]"
 WebSearch: "site:github.com claude skills [linguaggio]"
 ```
 
