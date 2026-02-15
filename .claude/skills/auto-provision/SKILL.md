@@ -362,6 +362,42 @@ Se l'utente ha selezionato moduli BMAD nella Fase 3, procedi con l'installazione
 - `.claude/settings.local.json` per configurazioni locali (aggiungere a .gitignore)
 - Note su configurazioni team-level vs personali
 
+### 4.7 Generare tools-index.md
+
+Genera il file `tools-index.md` nella root del progetto. Questo file è l'indice di tutti gli strumenti installati, consultabile sia dagli umani che dal Component Search di Claude Code per il caricamento dinamico degli MCP server.
+
+```markdown
+# Tools Index
+
+Indice degli strumenti configurati da auto-provision. Claude Code usa questo file per caricare dinamicamente solo gli MCP server necessari.
+
+## MCP Server
+
+| Nome | Descrizione | Caso d'uso |
+|------|-------------|------------|
+| [nome] | [descrizione breve] | [quando usarlo] |
+
+## Skill
+
+| Nome | Comando | Descrizione |
+|------|---------|-------------|
+| [nome] | /[comando] | [descrizione breve] |
+
+## Hook
+
+| Evento | Descrizione |
+|--------|-------------|
+| [evento] | [cosa fa] |
+
+## Plugin
+
+| Nome | Tipo | Descrizione |
+|------|------|-------------|
+| [nome] | [marketplace/community] | [descrizione breve] |
+```
+
+Se `tools-index.md` esiste già, **fai merge** aggiungendo le nuove voci senza rimuovere quelle esistenti.
+
 ---
 
 ## FASE 5: Report Finale

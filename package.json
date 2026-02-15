@@ -22,7 +22,8 @@
   },
   "files": [
     "bin/",
-    ".claude/skills/auto-provision/"
+    ".claude/skills/auto-provision/",
+    ".claude/skills/auto-provision-need/"
   ],
   "engines": {
     "node": ">=18.0.0"
