@@ -338,31 +338,119 @@ Le skill generate devono riflettere i bisogni rilevati dall'analisi:
 
 Crea ogni skill come `.claude/skills/[nome-skill]/SKILL.md`
 
-### 4.4 Installare MCP Server, Plugin e Estensioni
+### 4.4 Configurare MCP Server in .mcp.json
 Carica il catalogo MCP e Plugin:
 See [mcp-plugin-catalog.md](mcp-plugin-catalog.md)
 
-**Installa AUTOMATICAMENTE** tutto ciò che l'utente ha confermato nella Fase 3:
-- **Plugin**: Esegui installazione via Bash
-- **MCP Server stdio**: Genera `.mcp.json` nella root del progetto
-- **MCP Server HTTP**: Esegui `claude mcp add --transport http` via Bash
-- **Marketplace esterni**: Esegui `/plugin marketplace add` via Bash
-- **Skill da repository**: Clona e copia automaticamente
-- **MCP con credenziali**: Installa e segnala le variabili da configurare
+Configura **solo** i server che possono essere scritti come file (azione diretta):
+- **MCP Server stdio**: Genera/merge `.mcp.json` nella root del progetto
+- **MCP con credenziali**: Genera in `.mcp.json` con variabili `${VAR}` e segnala nel report quali variabili d'ambiente configurare
 
-Se un'installazione fallisce, segnala l'errore e prosegui con le successive.
+**NON** eseguire comandi bash per installazione. I comandi esterni vanno nello script (sezione 4.5).
 
-### 4.5 Proporre e Installare Moduli BMAD (se selezionati)
+### 4.5 Generare provision-install.sh
+
+Raccogli **TUTTI** i comandi che richiedono esecuzione bash esterna e generali in uno script unico.
+
+#### Classificazione azioni
+
+**Dirette (file write, già eseguite da Claude Code):**
+- CLAUDE.md (4.1)
+- .claude/settings.json con hook (4.2)
+- .claude/skills/*/SKILL.md (4.3)
+- .mcp.json per MCP stdio (4.4)
+- .claude/settings.local.json (4.7)
+- tools-index.md (4.8)
+
+**Script bash (provision-install.sh):**
+- `claude mcp add --transport http <nome> <url>` — MCP server HTTP
+- `git clone` + `cp` per skill da repository esterni (obra/superpowers, vercel-labs/agent-browser, etc.)
+- `npx bmad-method install` — moduli BMAD (se selezionati in Fase 3)
+- Qualsiasi altro comando `npm`/`npx` necessario
+- `/plugin marketplace add <repo>` — marketplace esterni (tramite `claude /plugin marketplace add`)
+
+**Post-riavvio (istruzioni stampate dallo script):**
+- `/plugin install <nome>@claude-plugins-official` — plugin dal marketplace ufficiale
+- `/plugin install <nome>@<marketplace>` — plugin da marketplace esterni
+
+#### Struttura dello script
+
+Se ci sono comandi esterni, genera `provision-install.sh` nella root del progetto:
+
+```bash
+#!/bin/bash
+# provision-install.sh — generato da /auto-provision
+set -e
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+echo "================================================"
+echo "  Auto-Provision: Installazione componenti esterni"
+echo "================================================"
+echo ""
+
+# --- MCP Server HTTP ---
+echo "Installazione MCP Server HTTP..."
+claude mcp add --transport http <nome> <url> && echo "  ✓ <nome>" || echo "  ✗ <nome>"
+
+# --- Skill da Repository ---
+echo ""
+echo "Installazione Skill esterne..."
+TMPDIR=$(mktemp -d)
+git clone --depth 1 --filter=blob:none --sparse https://github.com/<repo>.git "$TMPDIR/<repo>"
+cd "$TMPDIR/<repo>" && git sparse-checkout set skills/<nome>
+cp -r skills/<nome> "$SCRIPT_DIR/.claude/skills/"
+cd "$SCRIPT_DIR"
+rm -rf "$TMPDIR"
+echo "  ✓ <nome>"
+
+# --- Marketplace esterni ---
+echo ""
+echo "Aggiunta marketplace esterni..."
+claude /plugin marketplace add <repo> && echo "  ✓ <repo>" || echo "  ✗ <repo>"
+
+# --- Moduli BMAD ---
+echo ""
+echo "Installazione moduli BMAD..."
+npx bmad-method install && echo "  ✓ BMAD modules" || echo "  ✗ BMAD modules"
+
+echo ""
+echo "================================================"
+echo "  Installazione completata!"
+echo "================================================"
+
+# Post-install: comandi da eseguire dentro Claude Code al riavvio
+echo ""
+echo "DOPO IL RIAVVIO, esegui in Claude Code:"
+echo "  /plugin install <nome>@claude-plugins-official"
+echo "  /plugin install <nome>@<marketplace>"
+
+# Self-cleanup + riavvio Claude Code
+rm -- "$0"
+exec claude
+```
+
+#### Regole per la generazione
+
+1. **Includi solo le sezioni pertinenti**: Se non ci sono MCP HTTP, ometti quella sezione. Se non ci sono skill esterne, ometti quella sezione. Etc.
+2. **Se non ci sono comandi esterni** (solo file write diretti), **NON generare lo script**
+3. **Rendi lo script eseguibile**: Dopo la generazione, esegui `chmod +x provision-install.sh`
+4. **Self-cleanup**: Lo script si auto-elimina con `rm -- "$0"` e riavvia Claude Code con `exec claude`
+5. **Istruzioni post-riavvio**: Stampa i comandi `/plugin install` che l'utente dovrà eseguire dentro Claude Code dopo il riavvio
+
+### 4.6 Proporre e Installare Moduli BMAD (se selezionati)
 Carica il catalogo moduli:
 See [bmad-modules-catalog.md](bmad-modules-catalog.md)
 
-Se l'utente ha selezionato moduli BMAD nella Fase 3, procedi con l'installazione.
+Se l'utente ha selezionato moduli BMAD nella Fase 3:
+- **Non eseguire** `npx bmad-method install` direttamente
+- **Aggiungi** il comando `npx bmad-method install` alla sezione BMAD dello script `provision-install.sh` (generato in 4.5)
 
-### 4.6 Generare Configurazione Aggiuntiva
+### 4.7 Generare Configurazione Aggiuntiva
 - `.claude/settings.local.json` per configurazioni locali (aggiungere a .gitignore)
 - Note su configurazioni team-level vs personali
 
-### 4.7 Generare tools-index.md
+### 4.8 Generare tools-index.md
 
 Genera il file `tools-index.md` nella root del progetto. Questo file è l'indice di tutti gli strumenti installati, consultabile sia dagli umani che dal Component Search di Claude Code per il caricamento dinamico degli MCP server.
 
@@ -402,6 +490,72 @@ Se `tools-index.md` esiste già, **fai merge** aggiungendo le nuove voci senza r
 
 ## FASE 5: Report Finale
 
+Il report finale deve distinguere tra componenti già pronti e quelli che richiedono lo script.
+
+**Se provision-install.sh è stato generato:**
+
+```
+============================================
+  AUTO-PROVISION — Completato!
+============================================
+
+FILE GENERATI:
+- CLAUDE.md (XX righe)
+- .claude/settings.json (XX hook configurati)
+- .claude/skills/[nome]/SKILL.md (per ogni skill)
+- .mcp.json (XX server MCP configurati)
+- provision-install.sh (script di installazione)
+
+HOOK ATTIVI:
+- [evento]: [descrizione]
+
+SKILL DISPONIBILI:
+- /[nome-skill]: [descrizione]
+
+CONFIGURATI (pronti all'uso):
+  MCP Server (stdio):
+  ✓ [nome] — configurato in .mcp.json
+  Skill locali:
+  ✓ [nome] — generata
+
+DA INSTALLARE (nello script):
+  MCP Server (HTTP):
+  ◻ [nome] — claude mcp add
+  Skill esterne:
+  ◻ [nome] — git clone da [repo]
+  Marketplace:
+  ◻ [nome] — plugin marketplace add
+  Moduli BMAD:
+  ◻ npx bmad-method install
+
+POST-RIAVVIO (comandi manuali in Claude Code):
+  ◻ /plugin install [nome]@claude-plugins-official
+  ◻ /plugin install [nome]@[marketplace]
+
+CREDENZIALI DA CONFIGURARE:
+- [server]: imposta [VAR_NAME]
+
+AREE DI MIGLIORAMENTO RILEVATE:
+- Sicurezza: [raccomandazione specifica]
+- Qualità: [raccomandazione specifica]
+- Performance: [raccomandazione specifica]
+
+================================================
+  SCRIPT DI INSTALLAZIONE GENERATO:
+    provision-install.sh
+
+  Per completare l'installazione:
+    1. Esci da Claude Code (Ctrl+C o /exit)
+    2. Esegui: bash provision-install.sh
+    3. Lo script installerà i componenti,
+       si auto-eliminerà e riavvierà Claude Code
+    4. Dopo il riavvio, esegui i comandi /plugin
+       elencati sopra in POST-RIAVVIO
+================================================
+```
+
+**Se provision-install.sh NON è stato generato** (solo file write diretti):
+
 ```
 ============================================
   AUTO-PROVISION — Completato!
@@ -419,17 +573,11 @@ HOOK ATTIVI:
 SKILL DISPONIBILI:
 - /[nome-skill]: [descrizione]
 
-INSTALLATI AUTOMATICAMENTE:
-  Plugin:
-  ✓ [nome] — installato
-  MCP Server:
-  ✓ [nome] — configurato
-  Skill Community:
-  ✓ [nome] — installato
-  Marketplace:
-  ✓ [nome] — aggiunto
-  Errori (se presenti):
-  ✗ [nome] — [motivo]
+CONFIGURATI (pronti all'uso):
+  MCP Server (stdio):
+  ✓ [nome] — configurato in .mcp.json
+  Skill locali:
+  ✓ [nome] — generata
 
 CREDENZIALI DA CONFIGURARE:
 - [server]: imposta [VAR_NAME]
@@ -460,4 +608,6 @@ PROSSIMI PASSI:
 - Il CLAUDE.md deve essere **conciso ma completo** — sotto le 200 righe se possibile
 - Usare il linguaggio dell'utente per i commenti nel CLAUDE.md
 - Hook e skill devono essere **immediatamente funzionanti** senza configurazione aggiuntiva
-- **Installazione automatica** — dopo la conferma dell'utente, esegui tutto senza chiedere altro
+- **File write diretti** — tutto ciò che può essere scritto come file (CLAUDE.md, .mcp.json, settings.json, skill, tools-index) viene eseguito subito
+- **Script per comandi esterni** — tutto ciò che richiede bash esterno (claude mcp add HTTP, git clone, npx) va in `provision-install.sh`
+- **Mai eseguire comandi bash esterni** direttamente — sempre delegare allo script

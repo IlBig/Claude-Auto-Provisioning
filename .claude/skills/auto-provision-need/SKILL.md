@@ -128,20 +128,45 @@ Stesse regole della Fase 3 di auto-provision:
 
 ### 3.2 Installazione Resiliente
 
-Installa ogni componente selezionato seguendo:
+Classifica ogni componente selezionato e installa con la strategia appropriata:
+
+#### Azioni dirette (file write, eseguiti subito da Claude Code):
+- **MCP Server stdio** → genera/merge `.mcp.json`
+- **Skill locali** → genera `.claude/skills/[nome]/SKILL.md`
+- **Hook** → merge in `.claude/settings.json`
+- **Aggiornamenti CLAUDE.md** → merge sezioni
+- **tools-index.md** → merge nuove voci
+
+#### Azioni script (comandi bash esterni → `provision-install.sh`):
+- **MCP Server HTTP** → `claude mcp add --transport http <nome> <url>`
+- **Skill da repository** → `git clone` + `cp`
+- **Moduli BMAD** → `npx bmad-method install`
+- **Marketplace esterni** → `claude /plugin marketplace add <repo>`
+- Qualsiasi altro comando `npm`/`npx`
+
+#### Azioni post-riavvio (istruzioni stampate dallo script):
+- **Plugin** → `/plugin install <nome>@claude-plugins-official`
+- **Plugin da marketplace** → `/plugin install <nome>@<marketplace>`
+
+**Esecuzione:**
+
+1. **File write diretti**: Esegui subito, mostrando progresso:
+   ```
+   Configurazione 1/N: [nome]... ✓
+   ```
+
+2. **Comandi esterni**: Genera (o appendi a) `provision-install.sh` nella root del progetto. Se lo script esiste già (es. da un precedente `/auto-provision`), **appendi** i nuovi comandi senza sovrascrivere. Rendi eseguibile con `chmod +x`.
+
+3. **Plugin post-riavvio**: Aggiungi le istruzioni `/plugin install` nella sezione echo dello script.
+
+**Regole:**
 - **ADR-5**: Sequential-Isolated-Continue — ogni componente isolato
 - **ADR-7**: Error handling a 3 livelli — retry (fino a 3) → self-heal → log & continue
-
-Per ogni componente mostra il progresso:
-```
-Installazione 1/3: [nome]... ✓
-Installazione 2/3: [nome]... ✓
-Installazione 3/3: [nome]... ✗ [motivo breve]
-```
+- **Mai eseguire comandi bash esterni** direttamente — sempre delegare allo script
 
 ### 3.3 Post-Installazione
 
-Dopo l'installazione:
+Dopo l'installazione dei file write diretti:
 
 1. **Aggiorna tools-index.md**: Aggiungi i nuovi componenti (merge, non sovrascrivere)
 2. **Merge CLAUDE.md**: Se il componente richiede configurazione in CLAUDE.md, aggiungi le sezioni necessarie (ADR-3 section-based merge)
@@ -149,13 +174,52 @@ Dopo l'installazione:
 
 ### 3.4 Mini-Report
 
+**Se provision-install.sh è stato generato (o aggiornato):**
+
 ```
 AUTO-PROVISION-NEED — Completato!
 ===================================
 
-INSTALLATI:
-  ✓ [nome] — [tipo] — installato
-  ✗ [nome] — [tipo] — [motivo errore]
+CONFIGURATI (pronti all'uso):
+  ✓ [nome] — [tipo] — configurato
+  ✓ [nome] — [tipo] — configurato
+
+DA INSTALLARE (nello script):
+  ◻ [nome] — [tipo] — aggiunto a provision-install.sh
+  ◻ [nome] — [tipo] — aggiunto a provision-install.sh
+
+POST-RIAVVIO (comandi manuali in Claude Code):
+  ◻ /plugin install [nome]@claude-plugins-official
+
+CREDENZIALI DA CONFIGURARE:
+- [server]: imposta [VAR_NAME]
+
+FILE AGGIORNATI:
+- tools-index.md (aggiornato)
+- [altri file modificati]
+
+================================================
+  SCRIPT DI INSTALLAZIONE:
+    provision-install.sh
+
+  Per completare l'installazione:
+    1. Esci da Claude Code (Ctrl+C o /exit)
+    2. Esegui: bash provision-install.sh
+    3. Lo script installerà i componenti,
+       si auto-eliminerà e riavvierà Claude Code
+    4. Dopo il riavvio, esegui i comandi /plugin
+       elencati sopra in POST-RIAVVIO
+================================================
+```
+
+**Se NON ci sono comandi esterni (solo file write):**
+
+```
+AUTO-PROVISION-NEED — Completato!
+===================================
+
+CONFIGURATI (pronti all'uso):
+  ✓ [nome] — [tipo] — configurato
 
 CREDENZIALI DA CONFIGURARE:
 - [server]: imposta [VAR_NAME]
@@ -172,5 +236,7 @@ FILE AGGIORNATI:
 - **Mai sovrascrivere** file esistenti — sempre merge
 - **Rispetta le convenzioni del progetto** già in uso
 - **Dati live > cataloghi statici** — usa le info più recenti
-- **Installazione automatica** — dopo la conferma, esegui tutto senza chiedere altro
+- **File write diretti** — tutto ciò che può essere scritto come file viene eseguito subito
+- **Script per comandi esterni** — tutto ciò che richiede bash esterno va in `provision-install.sh`
+- **Mai eseguire comandi bash esterni** direttamente — sempre delegare allo script
 - **Conciso** — non ripetere informazioni già note all'utente
