@@ -214,26 +214,63 @@ Raccomanda solo se ci sono indicatori espliciti di uso team:
 
 ## Marketplace e Skill Esterni
 
-### wshobson/agents — Mega Marketplace (73 plugin, 112 agenti, 146 skill)
-**Condizione**: Raccomandare SEMPRE come marketplace aggiuntivo.
-Contiene plugin per qualsiasi esigenza: Python, Kubernetes, security, blockchain, full-stack, code review, debugging, deployment.
+### wshobson/agents — Marketplace Community (plugin individuali)
 
-**Installazione marketplace**:
-```bash
-/plugin marketplace add wshobson/agents
+**Condizione**: NON raccomandare come voce unica. Estrarre i plugin individuali e valutarli singolarmente.
+
+#### Flusso di selezione
+
+1. **Fetch catalogo**: Usa WebFetch per leggere il README del marketplace:
+   ```
+   WebFetch: "https://raw.githubusercontent.com/wshobson/agents/main/README.md"
+   ```
+2. **Estrai lista plugin**: Dal README, estrai ogni plugin con nome e descrizione breve
+3. **Valuta rilevanza**: Per ciascun plugin, valuta la pertinenza rispetto al profilo progetto (tech stack, architettura, lacune rilevate)
+4. **Filtra**: Passa alla Fase 3 solo i plugin pertinenti, come voci individuali nella lista componenti
+5. **Prerequisito automatico**: Il marketplace (`/plugin marketplace add wshobson/agents`) viene aggiunto automaticamente nello script `provision-install.sh` **solo se almeno 1 plugin è selezionato** dall'utente. Non è una voce nella lista.
+
+#### Mapping tipo-progetto → plugin suggeriti
+
+| Indicatore nel progetto | Plugin | Scopo |
+|--------------------------|--------|-------|
+| **Python (pyproject.toml, requirements.txt)** | `python-development` | Sviluppo Python con linting, testing, packaging |
+| **Kubernetes (k8s manifests, helm)** | `kubernetes-operations` | Orchestrazione cluster K8s |
+| **Full-stack (frontend + backend)** | `full-stack-orchestration` | Orchestrazione full-stack |
+| **Assenza code review CI/CD** | `agent-teams` | Code review multi-agente |
+| **Lacune sicurezza rilevate** | `security-hardening` | Security audit automatico |
+| **DevOps (CI/CD, Docker)** | `devops-automation` | Automazione DevOps |
+| **Data/ML (pandas, numpy, torch)** | `data-science` | Pipeline dati e ML |
+| **API development** | `api-development` | Sviluppo e test API |
+| **Debugging complesso** | `advanced-debugging` | Debug avanzato multi-layer |
+| **Documentazione carente** | `documentation-generator` | Generazione docs automatica |
+
+**Nota**: La tabella sopra è un mapping indicativo. Il fetch live dal README potrebbe rivelare plugin aggiuntivi non in tabella — valutarli comunque contro il profilo progetto.
+
+#### Formato nella lista componenti (Fase 3)
+
+Ogni plugin rilevante appare come voce individuale:
+```
+  [x]  N. Plugin: agent-teams (wshobson/agents) — Code review multi-agente
+         Motivazione: Nessun CI/CD code review. Plugin fornisce review strutturata.
+  [x]  N. Plugin: security-hardening (wshobson/agents) — Security audit automatico
+         Motivazione: Lacune sicurezza rilevate (CORS, rate limiting assenti).
+  [ ]  N. Plugin: full-stack-orchestration (wshobson/agents) — Orchestrazione full-stack
+         Nota: Utile se il progetto cresce verso architettura multi-layer.
 ```
 
-**Plugin consigliati in base al progetto**:
+#### Installazione (in provision-install.sh)
 
-| Tipo Progetto | Plugin da installare |
-|---------------|---------------------|
-| **Python** | `/plugin install python-development@wshobson-agents` |
-| **Kubernetes/DevOps** | `/plugin install kubernetes-operations@wshobson-agents` |
-| **Full-stack** | `/plugin install full-stack-orchestration@wshobson-agents` |
-| **Security-focused** | Cerca plugin security nel marketplace |
-| **Code review** | `/plugin install agent-teams@wshobson-agents` (review multi-agente) |
+Se almeno 1 plugin è selezionato, lo script include:
+```bash
+# --- Marketplace wshobson/agents (prerequisito per plugin selezionati) ---
+claude /plugin marketplace add wshobson/agents && echo "  ✓ marketplace wshobson/agents" || echo "  ✗ marketplace wshobson/agents"
+```
 
-**Nota**: Dopo aver aggiunto il marketplace, i plugin specifici vengono selezionati dall'utente nella lista interattiva.
+E nella sezione post-riavvio:
+```bash
+echo "  /plugin install agent-teams@wshobson-agents"
+echo "  /plugin install security-hardening@wshobson-agents"
+```
 
 ---
 
@@ -282,21 +319,27 @@ rm -rf /tmp/agent-browser
 
 ## Regole di Selezione Skill Esterni
 
-Nella lista interattiva, presenta le skill esterne come categoria separata:
+Nella lista interattiva, presenta le skill esterne e i plugin marketplace come voci individuali nella lista piatta (non come categorie separate). Ogni voce indica la fonte tra parentesi.
 
 ```
-SKILL ESTERNE (dalla community):
-  [x] N. wshobson/agents marketplace — 73 plugin specializzati (aggiunge il marketplace)
-  [x] N. systematic-debugging — Debug con root cause analysis
-  [x] N. git-worktrees — Workspace git isolati per sviluppo parallelo
-  [ ] N. agent-browser — Automazione browser per web testing
+SKILL E PLUGIN COMMUNITY:
+  [x] N. systematic-debugging (obra/superpowers) — Debug con root cause analysis
+  [x] N. git-worktrees (obra/superpowers) — Workspace git isolati per sviluppo parallelo
+  [ ] N. agent-browser (vercel-labs) — Automazione browser per web testing
+
+PLUGIN MARKETPLACE (wshobson/agents):
+  [x] N. Plugin: python-development (wshobson/agents) — Sviluppo Python con linting, testing, packaging
+  [x] N. Plugin: agent-teams (wshobson/agents) — Code review multi-agente
+  [ ] N. Plugin: kubernetes-operations (wshobson/agents) — Orchestrazione cluster K8s
 ```
 
 **Pre-selezione**:
-- `wshobson/agents` marketplace: SEMPRE pre-selezionato
 - `systematic-debugging`: SEMPRE pre-selezionato (utile per qualsiasi progetto)
 - `git-worktrees`: Pre-selezionato se il progetto usa Git
 - `agent-browser`: Pre-selezionato SOLO se progetto web
+- **Plugin wshobson/agents**: Pre-selezione basata sull'analisi del profilo progetto — solo quelli pertinenti al tech stack e alle lacune rilevate
+
+**Nota marketplace**: Il marketplace `wshobson/agents` NON è una voce selezionabile nella lista. È un prerequisito automatico: se l'utente seleziona almeno 1 plugin da wshobson/agents, il marketplace viene aggiunto automaticamente nello script `provision-install.sh` prima dei singoli plugin.
 
 ---
 

@@ -217,12 +217,19 @@ WebSearch: "claude code plugin [framework-rilevato]"
 WebSearch: "site:github.com claude-code plugin [tech-stack]"
 ```
 
-#### Marketplace wshobson/agents
-Usa WebFetch per leggere il catalogo aggiornato:
+#### Marketplace wshobson/agents — Estrazione Plugin Individuali
+Usa WebFetch per leggere il catalogo aggiornato e **estrarre i plugin individuali**:
 ```
 WebFetch: "https://raw.githubusercontent.com/wshobson/agents/main/README.md"
-→ Estrai i plugin rilevanti per il tech stack del progetto
 ```
+
+**Procedura dopo il fetch:**
+1. **Estrai** dal README la lista completa dei plugin con nome + descrizione breve per ciascuno
+2. **Valuta** la rilevanza di ciascun plugin rispetto al profilo progetto (2.1): tech stack, architettura, lacune sicurezza/qualità/performance
+3. **Filtra** solo i plugin pertinenti al progetto — scarta quelli non rilevanti
+4. **Passa** i plugin filtrati alla consultazione esperti (2.3) e alla Fase 3 come **voci individuali** nella lista componenti
+
+**IMPORTANTE**: Il marketplace NON è una voce nella lista componenti. È un prerequisito implicito: viene aggiunto automaticamente nello script `provision-install.sh` solo se almeno 1 plugin è selezionato dall'utente in Fase 3.
 
 #### Skill Community
 Usa WebSearch per trovare skill specifiche:
@@ -430,11 +437,11 @@ Raccogli **TUTTI** i comandi che richiedono esecuzione bash esterna e generali i
 - `git clone` + `cp` per skill da repository esterni (obra/superpowers, vercel-labs/agent-browser, etc.)
 - `npx bmad-method install` — moduli BMAD (se selezionati in Fase 3)
 - Qualsiasi altro comando `npm`/`npx` necessario
-- `/plugin marketplace add <repo>` — marketplace esterni (tramite `claude /plugin marketplace add`)
+- `/plugin marketplace add wshobson/agents` — prerequisito automatico se almeno 1 plugin è selezionato (tramite `claude /plugin marketplace add`)
 
 **Post-riavvio (istruzioni stampate dallo script):**
 - `/plugin install <nome>@claude-plugins-official` — plugin dal marketplace ufficiale
-- `/plugin install <nome>@<marketplace>` — plugin da marketplace esterni
+- `/plugin install <nome-plugin>@wshobson-agents` — per ogni plugin marketplace selezionato dall'utente
 
 #### Struttura dello script
 
@@ -467,10 +474,10 @@ cd "$SCRIPT_DIR"
 rm -rf "$TMPDIR"
 echo "  ✓ <nome>"
 
-# --- Marketplace esterni ---
+# --- Marketplace wshobson/agents (prerequisito per plugin selezionati) ---
 echo ""
-echo "Aggiunta marketplace esterni..."
-claude /plugin marketplace add <repo> && echo "  ✓ <repo>" || echo "  ✗ <repo>"
+echo "Aggiunta marketplace wshobson/agents..."
+claude /plugin marketplace add wshobson/agents && echo "  ✓ marketplace wshobson/agents" || echo "  ✗ marketplace wshobson/agents"
 
 # --- Moduli BMAD ---
 echo ""
@@ -486,7 +493,8 @@ echo "================================================"
 echo ""
 echo "DOPO IL RIAVVIO, esegui in Claude Code:"
 echo "  /plugin install <nome>@claude-plugins-official"
-echo "  /plugin install <nome>@<marketplace>"
+# Per ogni plugin marketplace selezionato dall'utente:
+echo "  /plugin install <nome-plugin>@wshobson-agents"
 
 # Self-cleanup + riavvio Claude Code
 rm -- "$0"

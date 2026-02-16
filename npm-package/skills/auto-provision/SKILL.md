@@ -213,21 +213,28 @@ WebSearch: "site:glama.ai/mcp [framework-rilevato]"
 #### Plugin Claude Code
 Usa WebSearch per trovare plugin aggiornati:
 ```
-WebSearch: "claude code plugin [framework-rilevato] 2026"
+WebSearch: "claude code plugin [framework-rilevato]"
 WebSearch: "site:github.com claude-code plugin [tech-stack]"
 ```
 
-#### Marketplace wshobson/agents
-Usa WebFetch per leggere il catalogo aggiornato:
+#### Marketplace wshobson/agents — Estrazione Plugin Individuali
+Usa WebFetch per leggere il catalogo aggiornato e **estrarre i plugin individuali**:
 ```
 WebFetch: "https://raw.githubusercontent.com/wshobson/agents/main/README.md"
-→ Estrai i plugin rilevanti per il tech stack del progetto
 ```
+
+**Procedura dopo il fetch:**
+1. **Estrai** dal README la lista completa dei plugin con nome + descrizione breve per ciascuno
+2. **Valuta** la rilevanza di ciascun plugin rispetto al profilo progetto (2.1): tech stack, architettura, lacune sicurezza/qualità/performance
+3. **Filtra** solo i plugin pertinenti al progetto — scarta quelli non rilevanti
+4. **Passa** i plugin filtrati alla consultazione esperti (2.3) e alla Fase 3 come **voci individuali** nella lista componenti
+
+**IMPORTANTE**: Il marketplace NON è una voce nella lista componenti. È un prerequisito implicito: viene aggiunto automaticamente nello script `provision-install.sh` solo se almeno 1 plugin è selezionato dall'utente in Fase 3.
 
 #### Skill Community
 Usa WebSearch per trovare skill specifiche:
 ```
-WebSearch: "claude code skill [framework] [esigenza-specifica] 2026"
+WebSearch: "claude code skill [framework] [esigenza-specifica]"
 WebSearch: "site:github.com claude skills [linguaggio]"
 ```
 
@@ -238,11 +245,72 @@ See [bmad-modules-catalog.md](bmad-modules-catalog.md)
 
 **Combina** i risultati live con i cataloghi statici. I dati live hanno precedenza — se un tool è stato aggiornato, deprecato o sostituito, usa le informazioni più recenti.
 
+### 2.3 Consultazione Esperti Virtuali
+
+Pattern: **Self-Reflection → Self-Verification → Dual Expert Role-Play → Component Evaluation**
+
+Prima di presentare il piano all'utente, consulta due esperti virtuali per una valutazione più profonda dei componenti da proporre.
+
+#### Step 1: Identificazione Esperti
+
+**Esperto di Dominio**: Basandoti su README, descrizione e scopo del progetto, identifica lo specialista del settore/argomento. Deve essere un profilo specifico, non generico. Esempi:
+- App gestione budget familiare → consulente finanziario specializzato in risparmio familiare
+- Piattaforma prenotazioni ristorante → imprenditore nel settore ristorazione
+- App fitness → personal trainer e nutrizionista sportivo
+- Piattaforma e-commerce → esperto retail e supply chain manager
+
+**Esperto Tecnico**: Basandoti sulle lacune rilevate nell'analisi (sicurezza, qualità codice, performance, UX, prodotto), identifica lo specialista tecnico più pertinente. Profilo specifico e contestualizzato allo stack del progetto. Esempi:
+- Lacune sicurezza in app Node.js → security engineer specializzato in Node.js e OWASP
+- Problemi performance in app React → frontend performance engineer esperto di React rendering
+- Carenze DevOps → SRE/DevOps engineer specializzato nello stack rilevato
+
+#### Step 2: Verifica della Scelta
+
+Per **ciascun esperto**, esegui un ciclo di self-verification:
+1. Genera 3-5 domande di verifica per confermare che il profilo scelto sia il più appropriato
+2. Rispondi a ciascuna domanda separatamente
+3. Rivedi la scelta: se le risposte rivelano un profilo più adatto, aggiorna la selezione
+
+Esempi di domande di verifica:
+- "Questo esperto ha le competenze per valutare le specificità del dominio/stack?"
+- "C'è un profilo più specializzato per questo contesto?"
+- "L'esperto copre le aree di lacuna principali rilevate?"
+
+#### Step 3: Consultazione Congiunta
+
+1. **L'esperto di dominio** analizza il progetto dalla prospettiva del settore:
+   - Quali funzionalità/flussi sono critici nel dominio?
+   - Quali standard di settore andrebbero rispettati?
+   - Quali integrazioni esterne sono tipiche nel settore?
+   - Quali sono le priorità dell'utente finale in questo dominio?
+
+2. **L'esperto tecnico**, informato dalle esigenze di dominio emerse, valuta i cataloghi:
+   - Riceve: profilo progetto completo + insight dell'esperto di dominio + tutti i risultati dei cataloghi (statici e live)
+   - Valuta ogni componente candidato secondo: rilevanza per il progetto, priorità di installazione, sinergie con altri componenti, motivazione tecnica
+
+3. **Insieme** producono la lista ordinata per priorità, decidendo:
+   - Quali componenti sono fortemente raccomandati (`[x]`)
+   - Quali sono opzionali (`[ ]`)
+   - L'ordine di presentazione nella lista
+
+#### Output della Consultazione
+
+L'analisi degli esperti è **interna** (non viene mostrata come sezione separata all'utente). Il risultato influenza direttamente la selezione e l'ordinamento dei componenti nella Fase 3.
+
+All'utente si mostra nel report della Fase 3, nella sezione piano, subito dopo l'ANALISI QUALITATIVA:
+```
+ESPERTI CONSULTATI:
+  Dominio: [profilo specifico] → [1 riga insight chiave]
+  Tecnico: [profilo specifico] → [1 riga focus valutazione]
+```
+
 ---
 
-## FASE 3: Presentazione Piano e Conferma
+## FASE 3: Presentazione Piano e Conferma Individuale
 
-Presenta all'utente un piano completo che riflette l'analisi multi-dimensionale:
+Presenta all'utente un piano completo con **lista piatta numerata** dove ogni singolo componente può essere attivato o disattivato individualmente.
+
+**IMPORTANTE**: NON usare AskUserQuestion per la conferma. NON raggruppare in opzioni come "Conferma tutto" o "Solo essenziali". Presenta la lista direttamente nel chat e chiedi all'utente di digitare i numeri per fare toggle.
 
 ```
 ============================================
@@ -259,6 +327,10 @@ ANALISI QUALITATIVA:
   UX:            [███████░░░] 70% — [nota breve]
   Prodotto:      [████░░░░░░] 40% — [nota breve]
 
+ESPERTI CONSULTATI:
+  Dominio: [profilo specifico] → [1 riga insight chiave]
+  Tecnico: [profilo specifico] → [1 riga focus valutazione]
+
 FILE CHE VERRANNO GENERATI:
 ---------------------------
 1. CLAUDE.md — Regole, convenzioni, architettura, comandi
@@ -267,44 +339,41 @@ FILE CHE VERRANNO GENERATI:
 
 COMPONENTI DA INSTALLARE:
 -------------------------
-(seleziona quelli che vuoi, deseleziona quelli che non vuoi)
+Ogni voce è attivabile/disattivabile singolarmente.
+Digita i numeri separati da virgola per cambiare stato (es: "3,5,8"), poi invio per confermare.
 
-  ESSENZIALI:
-  [x] 1. [nome] — [scopo] — [motivazione dall'analisi]
-  [x] 2. [nome] — [scopo] — [motivazione dall'analisi]
+  [x]  1. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  2. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  3. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  4. [nome MCP/plugin/skill] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [x]  5. [nome skill community] — [scopo]
+          Motivazione: [perché l'analisi lo raccomanda]
+  [ ]  6. [nome MCP/plugin opzionale] — [scopo]
+          Nota: [quando è utile]
+  [ ]  7. [nome MCP/plugin opzionale] — [scopo]
+          Nota: [quando è utile]
+  [x]  8. [modulo BMAD] — [scopo]
+  [ ]  9. [modulo BMAD] — [scopo]
 
-  QUALITÀ & SICUREZZA:
-  [x] 3. [nome] — [scopo] — [colma lacuna rilevata]
-  [x] 4. [nome] — [scopo] — [colma lacuna rilevata]
-
-  PRESTAZIONI & MONITORING:
-  [x] 5. [nome] — [scopo] — [migliora area debole]
-
-  SVILUPPO & PRODUTTIVITÀ:
-  [x] 6. [nome] — [scopo]
-  [x] 7. [nome] — [scopo]
-
-  SKILL COMMUNITY:
-  [x] 8. [nome] — [scopo]
-  [x] 9. [nome] — [scopo]
-
-  OPZIONALI:
-  [ ] 10. [nome] — [scopo] (se usate [servizio])
-
-  MODULI BMAD (se applicabile):
-  [x] 11. Core — Orchestrazione (obbligatorio)
-  [x] 12. BMM — Agile Development
-  [ ] 13. TEA — Test Architect
-
-→ Indica i numeri da RIMUOVERE o AGGIUNGERE, oppure premi invio per confermare.
+→ Digita i numeri separati da virgola (es: "3,6,9"), oppure invio per confermare.
+  Per numeri a due cifre non c'è ambiguità: "2,3" = voci 2 e 3; "23" = voce 23.
 
 FILE ESISTENTI CHE VERRANNO PRESERVATI:
 - [lista]
 ```
 
-**Ogni raccomandazione deve essere MOTIVATA** dall'analisi. Non suggerire un tool "perché è popolare" — suggeriscilo perché l'analisi ha rilevato un bisogno specifico.
+### Regole per la lista componenti:
 
-**Chiedi conferma esplicita all'utente prima di procedere.**
+1. **Lista piatta**: Tutti i componenti (MCP server, plugin, skill, moduli BMAD) in un'unica lista numerata sequenziale. Nessun sottogruppo con scelta collettiva.
+2. **Pre-selezione intelligente**: Segna con `[x]` quelli fortemente raccomandati dall'analisi; segna con `[ ]` quelli opzionali o situazionali.
+3. **Toggle individuale**: L'utente digita i numeri dei componenti da invertire (attivare ↔ disattivare), **separati da virgola**. Esempio: se scrive `3,6`, il componente 3 passa da `[x]` a `[ ]` e il 6 da `[ ]` a `[x]`. La virgola elimina ambiguità con numeri a due cifre (es: `2,3` = voci 2 e 3; `23` = voce 23).
+4. **Iterativo**: Dopo il toggle, mostra la lista aggiornata e chiedi nuovamente. Ripeti finché l'utente conferma (invio vuoto o "ok"/"conferma").
+5. **Ogni voce motivata**: Ogni raccomandazione deve spiegare PERCHÉ è suggerita basandosi sull'analisi, non "perché è popolare".
+6. **No AskUserQuestion**: Usa solo testo diretto nel chat per la lista e l'interazione. L'utente risponde digitando numeri o "conferma".
 
 ---
 
@@ -339,33 +408,224 @@ Le skill generate devono riflettere i bisogni rilevati dall'analisi:
 
 Crea ogni skill come `.claude/skills/[nome-skill]/SKILL.md`
 
-### 4.4 Installare MCP Server, Plugin e Estensioni
+### 4.4 Configurare MCP Server in .mcp.json
 Carica il catalogo MCP e Plugin:
 See [mcp-plugin-catalog.md](mcp-plugin-catalog.md)
 
-**Installa AUTOMATICAMENTE** tutto ciò che l'utente ha confermato nella Fase 3:
-- **Plugin**: Esegui installazione via Bash
-- **MCP Server stdio**: Genera `.mcp.json` nella root del progetto
-- **MCP Server HTTP**: Esegui `claude mcp add --transport http` via Bash
-- **Marketplace esterni**: Esegui `/plugin marketplace add` via Bash
-- **Skill da repository**: Clona e copia automaticamente
-- **MCP con credenziali**: Installa e segnala le variabili da configurare
+Configura **solo** i server che possono essere scritti come file (azione diretta):
+- **MCP Server stdio**: Genera/merge `.mcp.json` nella root del progetto
+- **MCP con credenziali**: Genera in `.mcp.json` con variabili `${VAR}` e segnala nel report quali variabili d'ambiente configurare
 
-Se un'installazione fallisce, segnala l'errore e prosegui con le successive.
+**NON** eseguire comandi bash per installazione. I comandi esterni vanno nello script (sezione 4.5).
 
-### 4.5 Proporre e Installare Moduli BMAD (se selezionati)
+### 4.5 Generare provision-install.sh
+
+Raccogli **TUTTI** i comandi che richiedono esecuzione bash esterna e generali in uno script unico.
+
+#### Classificazione azioni
+
+**Dirette (file write, già eseguite da Claude Code):**
+- CLAUDE.md (4.1)
+- .claude/settings.json con hook (4.2)
+- .claude/skills/*/SKILL.md (4.3)
+- .mcp.json per MCP stdio (4.4)
+- .claude/settings.local.json (4.7)
+- tools-index.md (4.8)
+
+**Script bash (provision-install.sh):**
+- `claude mcp add --transport http <nome> <url>` — MCP server HTTP
+- `git clone` + `cp` per skill da repository esterni (obra/superpowers, vercel-labs/agent-browser, etc.)
+- `npx bmad-method install` — moduli BMAD (se selezionati in Fase 3)
+- Qualsiasi altro comando `npm`/`npx` necessario
+- `/plugin marketplace add wshobson/agents` — prerequisito automatico se almeno 1 plugin è selezionato (tramite `claude /plugin marketplace add`)
+
+**Post-riavvio (istruzioni stampate dallo script):**
+- `/plugin install <nome>@claude-plugins-official` — plugin dal marketplace ufficiale
+- `/plugin install <nome-plugin>@wshobson-agents` — per ogni plugin marketplace selezionato dall'utente
+
+#### Struttura dello script
+
+Se ci sono comandi esterni, genera `provision-install.sh` nella root del progetto:
+
+```bash
+#!/bin/bash
+# provision-install.sh — generato da /auto-provision
+set -e
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+echo "================================================"
+echo "  Auto-Provision: Installazione componenti esterni"
+echo "================================================"
+echo ""
+
+# --- MCP Server HTTP ---
+echo "Installazione MCP Server HTTP..."
+claude mcp add --transport http <nome> <url> && echo "  ✓ <nome>" || echo "  ✗ <nome>"
+
+# --- Skill da Repository ---
+echo ""
+echo "Installazione Skill esterne..."
+TMPDIR=$(mktemp -d)
+git clone --depth 1 --filter=blob:none --sparse https://github.com/<repo>.git "$TMPDIR/<repo>"
+cd "$TMPDIR/<repo>" && git sparse-checkout set skills/<nome>
+cp -r skills/<nome> "$SCRIPT_DIR/.claude/skills/"
+cd "$SCRIPT_DIR"
+rm -rf "$TMPDIR"
+echo "  ✓ <nome>"
+
+# --- Marketplace wshobson/agents (prerequisito per plugin selezionati) ---
+echo ""
+echo "Aggiunta marketplace wshobson/agents..."
+claude /plugin marketplace add wshobson/agents && echo "  ✓ marketplace wshobson/agents" || echo "  ✗ marketplace wshobson/agents"
+
+# --- Moduli BMAD ---
+echo ""
+echo "Installazione moduli BMAD..."
+npx bmad-method install && echo "  ✓ BMAD modules" || echo "  ✗ BMAD modules"
+
+echo ""
+echo "================================================"
+echo "  Installazione completata!"
+echo "================================================"
+
+# Post-install: comandi da eseguire dentro Claude Code al riavvio
+echo ""
+echo "DOPO IL RIAVVIO, esegui in Claude Code:"
+echo "  /plugin install <nome>@claude-plugins-official"
+# Per ogni plugin marketplace selezionato dall'utente:
+echo "  /plugin install <nome-plugin>@wshobson-agents"
+
+# Self-cleanup + riavvio Claude Code
+rm -- "$0"
+exec claude
+```
+
+#### Regole per la generazione
+
+1. **Includi solo le sezioni pertinenti**: Se non ci sono MCP HTTP, ometti quella sezione. Se non ci sono skill esterne, ometti quella sezione. Etc.
+2. **Se non ci sono comandi esterni** (solo file write diretti), **NON generare lo script**
+3. **Rendi lo script eseguibile**: Dopo la generazione, esegui `chmod +x provision-install.sh`
+4. **Self-cleanup**: Lo script si auto-elimina con `rm -- "$0"` e riavvia Claude Code con `exec claude`
+5. **Istruzioni post-riavvio**: Stampa i comandi `/plugin install` che l'utente dovrà eseguire dentro Claude Code dopo il riavvio
+
+### 4.6 Proporre e Installare Moduli BMAD (se selezionati)
 Carica il catalogo moduli:
 See [bmad-modules-catalog.md](bmad-modules-catalog.md)
 
-Se l'utente ha selezionato moduli BMAD nella Fase 3, procedi con l'installazione.
+Se l'utente ha selezionato moduli BMAD nella Fase 3:
+- **Non eseguire** `npx bmad-method install` direttamente
+- **Aggiungi** il comando `npx bmad-method install` alla sezione BMAD dello script `provision-install.sh` (generato in 4.5)
 
-### 4.6 Generare Configurazione Aggiuntiva
+### 4.7 Generare Configurazione Aggiuntiva
 - `.claude/settings.local.json` per configurazioni locali (aggiungere a .gitignore)
 - Note su configurazioni team-level vs personali
+
+### 4.8 Generare tools-index.md
+
+Genera il file `tools-index.md` nella root del progetto. Questo file è l'indice di tutti gli strumenti installati, consultabile sia dagli umani che dal Component Search di Claude Code per il caricamento dinamico degli MCP server.
+
+```markdown
+# Tools Index
+
+Indice degli strumenti configurati da auto-provision. Claude Code usa questo file per caricare dinamicamente solo gli MCP server necessari.
+
+## MCP Server
+
+| Nome | Descrizione | Caso d'uso |
+|------|-------------|------------|
+| [nome] | [descrizione breve] | [quando usarlo] |
+
+## Skill
+
+| Nome | Comando | Descrizione |
+|------|---------|-------------|
+| [nome] | /[comando] | [descrizione breve] |
+
+## Hook
+
+| Evento | Descrizione |
+|--------|-------------|
+| [evento] | [cosa fa] |
+
+## Plugin
+
+| Nome | Tipo | Descrizione |
+|------|------|-------------|
+| [nome] | [marketplace/community] | [descrizione breve] |
+```
+
+Se `tools-index.md` esiste già, **fai merge** aggiungendo le nuove voci senza rimuovere quelle esistenti.
 
 ---
 
 ## FASE 5: Report Finale
+
+Il report finale deve distinguere tra componenti già pronti e quelli che richiedono lo script.
+
+**Se provision-install.sh è stato generato:**
+
+```
+============================================
+  AUTO-PROVISION — Completato!
+============================================
+
+FILE GENERATI:
+- CLAUDE.md (XX righe)
+- .claude/settings.json (XX hook configurati)
+- .claude/skills/[nome]/SKILL.md (per ogni skill)
+- .mcp.json (XX server MCP configurati)
+- provision-install.sh (script di installazione)
+
+HOOK ATTIVI:
+- [evento]: [descrizione]
+
+SKILL DISPONIBILI:
+- /[nome-skill]: [descrizione]
+
+CONFIGURATI (pronti all'uso):
+  MCP Server (stdio):
+  ✓ [nome] — configurato in .mcp.json
+  Skill locali:
+  ✓ [nome] — generata
+
+DA INSTALLARE (nello script):
+  MCP Server (HTTP):
+  ◻ [nome] — claude mcp add
+  Skill esterne:
+  ◻ [nome] — git clone da [repo]
+  Marketplace:
+  ◻ [nome] — plugin marketplace add
+  Moduli BMAD:
+  ◻ npx bmad-method install
+
+POST-RIAVVIO (comandi manuali in Claude Code):
+  ◻ /plugin install [nome]@claude-plugins-official
+  ◻ /plugin install [nome]@[marketplace]
+
+CREDENZIALI DA CONFIGURARE:
+- [server]: imposta [VAR_NAME]
+
+AREE DI MIGLIORAMENTO RILEVATE:
+- Sicurezza: [raccomandazione specifica]
+- Qualità: [raccomandazione specifica]
+- Performance: [raccomandazione specifica]
+
+================================================
+  SCRIPT DI INSTALLAZIONE GENERATO:
+    provision-install.sh
+
+  Per completare l'installazione:
+    1. Esci da Claude Code (Ctrl+C o /exit)
+    2. Esegui: bash provision-install.sh
+    3. Lo script installerà i componenti,
+       si auto-eliminerà e riavvierà Claude Code
+    4. Dopo il riavvio, esegui i comandi /plugin
+       elencati sopra in POST-RIAVVIO
+================================================
+```
+
+**Se provision-install.sh NON è stato generato** (solo file write diretti):
 
 ```
 ============================================
@@ -384,17 +644,11 @@ HOOK ATTIVI:
 SKILL DISPONIBILI:
 - /[nome-skill]: [descrizione]
 
-INSTALLATI AUTOMATICAMENTE:
-  Plugin:
-  ✓ [nome] — installato
-  MCP Server:
-  ✓ [nome] — configurato
-  Skill Community:
-  ✓ [nome] — installato
-  Marketplace:
-  ✓ [nome] — aggiunto
-  Errori (se presenti):
-  ✗ [nome] — [motivo]
+CONFIGURATI (pronti all'uso):
+  MCP Server (stdio):
+  ✓ [nome] — configurato in .mcp.json
+  Skill locali:
+  ✓ [nome] — generata
 
 CREDENZIALI DA CONFIGURARE:
 - [server]: imposta [VAR_NAME]
@@ -425,4 +679,6 @@ PROSSIMI PASSI:
 - Il CLAUDE.md deve essere **conciso ma completo** — sotto le 200 righe se possibile
 - Usare il linguaggio dell'utente per i commenti nel CLAUDE.md
 - Hook e skill devono essere **immediatamente funzionanti** senza configurazione aggiuntiva
-- **Installazione automatica** — dopo la conferma dell'utente, esegui tutto senza chiedere altro
+- **File write diretti** — tutto ciò che può essere scritto come file (CLAUDE.md, .mcp.json, settings.json, skill, tools-index) viene eseguito subito
+- **Script per comandi esterni** — tutto ciò che richiede bash esterno (claude mcp add HTTP, git clone, npx) va in `provision-install.sh`
+- **Mai eseguire comandi bash esterni** direttamente — sempre delegare allo script

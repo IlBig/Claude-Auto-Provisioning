@@ -82,6 +82,12 @@ WebSearch: "claude code [tipo-componente] [esigenza]"
 
 Se le fonti live non sono raggiungibili, usa solo i cataloghi statici. I dati live hanno precedenza.
 
+**Plugin da marketplace (wshobson/agents)**: Se la ricerca nei cataloghi o le fonti live restituiscono risultati dal marketplace wshobson/agents, **non proporre il marketplace come voce unica**. Invece:
+1. Usa WebFetch per leggere il README del marketplace e estrarre i plugin individuali
+2. Filtra solo quelli pertinenti all'esigenza specifica dell'utente
+3. Presentali come voci individuali nella lista (Fase 2.4), con fonte `(wshobson/agents)`
+4. Il marketplace è un prerequisito automatico nello script — non una voce selezionabile
+
 ### 2.3 Consultazione Esperto Rapida
 
 Prima di filtrare e presentare i risultati, esegui una consultazione rapida con due esperti virtuali per valutare meglio la pertinenza dei componenti trovati.
