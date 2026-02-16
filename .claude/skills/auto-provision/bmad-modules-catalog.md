@@ -95,30 +95,30 @@ Modulo standalone per testing e quality assurance avanzati. Si integra con Playw
 
 ## Formato Presentazione Selezione
 
-Quando presenti la selezione dei moduli BMAD, usa questo formato:
+Quando presenti la selezione dei moduli BMAD, usa AskUserQuestion con `multiSelect: true` nella categoria `"Plugin"` (o in una domanda dedicata `"Moduli BMAD"` se ci sono già altri plugin).
 
+**Esempio opzioni AskUserQuestion:**
 ```
-MODULI BMAD DISPONIBILI:
--------------------------
-Seleziona i moduli da installare.
-
-[x] 1. Core (obbligatorio) — Orchestrazione agenti, configurazione, workflow base
-[x] 2. BMM — Agile-AI Development — Ciclo vita completo del software (12 agenti, 25+ workflow)
-[ ] 3. BMB — Builder — Crea agenti e workflow personalizzati
-[ ] 4. CIS — Creative Intelligence — Brainstorming, design thinking, 150+ tecniche creative
-[ ] 5. Game Dev Studio — Sviluppo videogiochi (GDD, meccaniche, agenti game-specific)
-[ ] 6. TEA — Test Architect — Testing avanzato, Playwright, CI/CD, ATDD
-
-Indica i numeri da AGGIUNGERE o RIMUOVERE, oppure premi invio per confermare.
+Categoria "Moduli BMAD":
+  - label: "Core (Recommended)"
+    description: "Orchestrazione agenti, configurazione, workflow base — obbligatorio"
+  - label: "BMM — Agile-AI Development (Recommended)"
+    description: "Ciclo vita completo del software (12 agenti, 25+ workflow)"
+  - label: "BMB — Builder"
+    description: "Crea agenti e workflow personalizzati — per utenti avanzati"
+  - label: "CIS — Creative Intelligence"
+    description: "Brainstorming, design thinking, 150+ tecniche creative"
 ```
 
-**Pre-selezione default**:
-- Core: SEMPRE selezionato (obbligatorio)
-- BMM: Pre-selezionato per progetti software
-- TEA: Pre-selezionato se il progetto ha già test o framework di test
-- CIS: Pre-selezionato se il progetto è in fase iniziale/ideativa
-- Game Dev: Pre-selezionato SOLO se rilevati indicatori di game dev (Unity, Godot, Bevy, etc.)
-- BMB: Mai pre-selezionato (per utenti avanzati)
+Se i moduli sono più di 4, sdoppia in sotto-domande (`"Moduli BMAD (1/2)"`, `"Moduli BMAD (2/2)"`).
+
+**Raccomandazione (Recommended)**:
+- Core: SEMPRE raccomandato (obbligatorio)
+- BMM: Raccomandato per progetti software
+- TEA: Raccomandato se il progetto ha già test o framework di test
+- CIS: Raccomandato se il progetto è in fase iniziale/ideativa
+- Game Dev: Raccomandato SOLO se rilevati indicatori di game dev (Unity, Godot, Bevy, etc.)
+- BMB: Mai raccomandato (per utenti avanzati)
 
 ## Installazione Moduli
 

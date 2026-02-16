@@ -306,11 +306,11 @@ ESPERTI CONSULTATI:
 
 ---
 
-## FASE 3: Presentazione Piano e Conferma Individuale
+## FASE 3: Presentazione Piano e Selezione Componenti
 
-Presenta all'utente un piano completo con **lista piatta numerata** dove ogni singolo componente può essere attivato o disattivato individualmente.
+### 3.1 Report Testuale
 
-**IMPORTANTE**: NON usare AskUserQuestion per la conferma. NON raggruppare in opzioni come "Conferma tutto" o "Solo essenziali". Presenta la lista direttamente nel chat e chiedi all'utente di digitare i numeri per fare toggle.
+Presenta all'utente il report completo prima della selezione. Questo fornisce il contesto per le scelte successive.
 
 ```
 ============================================
@@ -337,43 +337,76 @@ FILE CHE VERRANNO GENERATI:
 2. .claude/settings.json — Hook auto-format, lint, notifiche
 3. .claude/skills/ — Skill su misura per il progetto
 
-COMPONENTI DA INSTALLARE:
--------------------------
-Ogni voce è attivabile/disattivabile singolarmente.
-Digita i numeri separati da virgola per cambiare stato (es: "3,5,8"), poi invio per confermare.
-
-  [x]  1. [nome MCP/plugin/skill] — [scopo]
-          Motivazione: [perché l'analisi lo raccomanda]
-  [x]  2. [nome MCP/plugin/skill] — [scopo]
-          Motivazione: [perché l'analisi lo raccomanda]
-  [x]  3. [nome MCP/plugin/skill] — [scopo]
-          Motivazione: [perché l'analisi lo raccomanda]
-  [x]  4. [nome MCP/plugin/skill] — [scopo]
-          Motivazione: [perché l'analisi lo raccomanda]
-  [x]  5. [nome skill community] — [scopo]
-          Motivazione: [perché l'analisi lo raccomanda]
-  [ ]  6. [nome MCP/plugin opzionale] — [scopo]
-          Nota: [quando è utile]
-  [ ]  7. [nome MCP/plugin opzionale] — [scopo]
-          Nota: [quando è utile]
-  [x]  8. [modulo BMAD] — [scopo]
-  [ ]  9. [modulo BMAD] — [scopo]
-
-→ Digita i numeri separati da virgola (es: "3,6,9"), oppure invio per confermare.
-  Per numeri a due cifre non c'è ambiguità: "2,3" = voci 2 e 3; "23" = voce 23.
-
 FILE ESISTENTI CHE VERRANNO PRESERVATI:
 - [lista]
 ```
 
-### Regole per la lista componenti:
+Subito dopo il report, aggiungi la frase di transizione:
 
-1. **Lista piatta**: Tutti i componenti (MCP server, plugin, skill, moduli BMAD) in un'unica lista numerata sequenziale. Nessun sottogruppo con scelta collettiva.
-2. **Pre-selezione intelligente**: Segna con `[x]` quelli fortemente raccomandati dall'analisi; segna con `[ ]` quelli opzionali o situazionali.
-3. **Toggle individuale**: L'utente digita i numeri dei componenti da invertire (attivare ↔ disattivare), **separati da virgola**. Esempio: se scrive `3,6`, il componente 3 passa da `[x]` a `[ ]` e il 6 da `[ ]` a `[x]`. La virgola elimina ambiguità con numeri a due cifre (es: `2,3` = voci 2 e 3; `23` = voce 23).
-4. **Iterativo**: Dopo il toggle, mostra la lista aggiornata e chiedi nuovamente. Ripeti finché l'utente conferma (invio vuoto o "ok"/"conferma").
-5. **Ogni voce motivata**: Ogni raccomandazione deve spiegare PERCHÉ è suggerita basandosi sull'analisi, non "perché è popolare".
-6. **No AskUserQuestion**: Usa solo testo diretto nel chat per la lista e l'interazione. L'utente risponde digitando numeri o "conferma".
+```
+Sulla base dell'analisi sopra, seleziona i componenti da installare:
+```
+
+### 3.2 Selezione con AskUserQuestion
+
+Usa `AskUserQuestion` con `multiSelect: true` per presentare i componenti raggruppati per categoria.
+
+**Raggruppamento**: Ogni categoria diventa una domanda separata. Le categorie sono:
+
+| Header domanda | Contenuto |
+|----------------|-----------|
+| `"MCP Server"` | Server stdio, HTTP, con credenziali |
+| `"Hook"` | Formattatori, linter, sicurezza, qualità |
+| `"Skill"` | Skill generate per il progetto |
+| `"Plugin"` | Plugin community, moduli BMAD |
+
+**Per ogni opzione:**
+- **`label`**: `"nome-componente (Recommended)"` se raccomandato dall'analisi, altrimenti solo `"nome-componente"`. I componenti raccomandati vanno per primi nella lista.
+- **`description`**: Breve descrizione funzionale del componente (cosa fa, non perché). Il "perché" è già nel report sopra.
+
+**Esempio:**
+```
+AskUserQuestion:
+  question: "Quali MCP server vuoi installare?"
+  header: "MCP Server"
+  multiSelect: true
+  options:
+    - label: "context7 (Recommended)"
+      description: "Documentazione contestuale in tempo reale per librerie e framework"
+    - label: "postgres-mcp (Recommended)"
+      description: "Query e gestione database PostgreSQL direttamente da Claude"
+    - label: "redis-mcp"
+      description: "Accesso e gestione cache Redis per debug e monitoraggio"
+```
+
+### Regole per la selezione:
+
+1. **Categorie vuote**: Se una categoria non ha componenti, ometti la domanda corrispondente.
+2. **Vincoli AskUserQuestion**: Max 4 domande per chiamata, max 4 opzioni per domanda. Se una categoria ha più di 4 componenti, sdoppia in sotto-domande (es. `"MCP Server (1/2)"` e `"MCP Server (2/2)"`) su chiamate successive.
+3. **Overflow totale (>16 componenti)**: Usa chiamate successive di AskUserQuestion, mostrando `"Componenti aggiuntivi:"` tra le chiamate.
+4. **Opzione "Other"**: Aggiunta automaticamente dal sistema. Se l'utente la usa, interpreta il testo come richiesta aggiuntiva e cerca nel catalogo componenti corrispondenti.
+5. **Ogni opzione motivata nel contesto**: La `description` descrive cosa fa il componente. La motivazione dall'analisi è nel report sopra — non ripeterla nella description.
+6. **`--force` bypass**: Se l'argomento contiene `--force`, salta AskUserQuestion e installa automaticamente tutti i componenti con `(Recommended)`.
+
+### 3.3 Riepilogo di Conferma
+
+Dopo la selezione, mostra un riepilogo testuale dei componenti scelti prima di procedere alla FASE 4:
+
+```
+Componenti selezionati:
+  ✓ context7 — MCP Server
+  ✓ prettier — Hook
+  ✓ write-test — Skill
+  ✓ bmad-core — Plugin
+
+Procedo con l'installazione.
+```
+
+**Regole per il riepilogo:**
+- Elenca ogni componente selezionato con tipo (MCP Server, Hook, Skill, Plugin)
+- Rimuovi il suffisso `(Recommended)` dai label per ottenere i nomi componenti
+- Se l'utente ha usato "Other", includi anche i componenti aggiuntivi identificati
+- Questo riepilogo serve come ponte verso la FASE 4: la lista dei componenti da installare
 
 ---
 

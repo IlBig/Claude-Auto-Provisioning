@@ -319,25 +319,30 @@ rm -rf /tmp/agent-browser
 
 ## Regole di Selezione Skill Esterni
 
-Nella lista interattiva, presenta le skill esterne e i plugin marketplace come voci individuali nella lista piatta (non come categorie separate). Ogni voce indica la fonte tra parentesi.
+Nella selezione con AskUserQuestion, presenta le skill esterne e i plugin marketplace come opzioni individuali nelle categorie `"Skill"` e `"Plugin"`. Ogni label indica la fonte tra parentesi.
 
+**Esempio opzioni AskUserQuestion:**
 ```
-SKILL E PLUGIN COMMUNITY:
-  [x] N. systematic-debugging (obra/superpowers) — Debug con root cause analysis
-  [x] N. git-worktrees (obra/superpowers) — Workspace git isolati per sviluppo parallelo
-  [ ] N. agent-browser (vercel-labs) — Automazione browser per web testing
+Categoria "Skill":
+  - label: "systematic-debugging — obra/superpowers (Recommended)"
+    description: "Debug con root cause analysis"
+  - label: "git-worktrees — obra/superpowers (Recommended)"
+    description: "Workspace git isolati per sviluppo parallelo"
+  - label: "agent-browser — vercel-labs"
+    description: "Automazione browser per web testing"
 
-PLUGIN MARKETPLACE (wshobson/agents):
-  [x] N. Plugin: python-development (wshobson/agents) — Sviluppo Python con linting, testing, packaging
-  [x] N. Plugin: agent-teams (wshobson/agents) — Code review multi-agente
-  [ ] N. Plugin: kubernetes-operations (wshobson/agents) — Orchestrazione cluster K8s
+Categoria "Plugin":
+  - label: "python-development — wshobson/agents (Recommended)"
+    description: "Sviluppo Python con linting, testing, packaging"
+  - label: "agent-teams — wshobson/agents"
+    description: "Code review multi-agente"
 ```
 
-**Pre-selezione**:
-- `systematic-debugging`: SEMPRE pre-selezionato (utile per qualsiasi progetto)
-- `git-worktrees`: Pre-selezionato se il progetto usa Git
-- `agent-browser`: Pre-selezionato SOLO se progetto web
-- **Plugin wshobson/agents**: Pre-selezione basata sull'analisi del profilo progetto — solo quelli pertinenti al tech stack e alle lacune rilevate
+**Raccomandazione (Recommended)**:
+- `systematic-debugging`: SEMPRE raccomandato (utile per qualsiasi progetto)
+- `git-worktrees`: Raccomandato se il progetto usa Git
+- `agent-browser`: Raccomandato SOLO se progetto web
+- **Plugin wshobson/agents**: Raccomandazione basata sull'analisi del profilo progetto — solo quelli pertinenti al tech stack e alle lacune rilevate
 
 **Nota marketplace**: Il marketplace `wshobson/agents` NON è una voce selezionabile nella lista. È un prerequisito automatico: se l'utente seleziona almeno 1 plugin da wshobson/agents, il marketplace viene aggiunto automaticamente nello script `provision-install.sh` prima dei singoli plugin.
 
@@ -345,30 +350,24 @@ PLUGIN MARKETPLACE (wshobson/agents):
 
 ## Formato Output per il Piano
 
-Quando presenti le raccomandazioni MCP/Plugin all'utente, usa questo formato:
+Quando presenti le raccomandazioni MCP/Plugin all'utente, usa AskUserQuestion con `multiSelect: true` nella categoria `"MCP Server"`. I componenti essenziali e consigliati hanno `(Recommended)` nel label e vanno per primi.
 
+**Esempio opzioni AskUserQuestion:**
 ```
-MCP SERVER, PLUGIN E ESTENSIONI:
----------------------------------
-Seleziona quelli che vuoi installare. Rimuovi i numeri che non ti servono.
-
-ESSENZIALI (pre-selezionati):
-  [x] 1. [LSP] [linguaggio] — Intelligenza di codice
-  [x] 2. [GitHub] — Version control
-  [x] 3. [Database] [tipo DB] — Database management
-
-CONSIGLIATI (pre-selezionati):
-  [x] 4. [nome] — [scopo]
-  [x] 5. [nome] — [scopo]
-
-OPZIONALI (non selezionati):
-  [ ] 6. [nome] — [scopo] (se usate [servizio])
-  [ ] 7. [nome] — [scopo] (se usate [servizio])
-
-Indica i numeri da RIMUOVERE o AGGIUNGERE, oppure premi invio per confermare.
+Categoria "MCP Server":
+  - label: "[LSP] [linguaggio] (Recommended)"
+    description: "Intelligenza di codice per [linguaggio]"
+  - label: "[GitHub] (Recommended)"
+    description: "Version control e gestione repository"
+  - label: "[Database] [tipo DB] (Recommended)"
+    description: "Query e gestione database [tipo DB]"
+  - label: "[nome]"
+    description: "[scopo] — utile se usate [servizio]"
 ```
 
-Dopo la conferma dell'utente, procedi con l'installazione automatica.
+Se i componenti MCP sono più di 4, sdoppia in sotto-domande (`"MCP Server (1/2)"`, `"MCP Server (2/2)"`).
+
+Dopo la selezione e il riepilogo di conferma, procedi con l'installazione automatica.
 
 ---
 

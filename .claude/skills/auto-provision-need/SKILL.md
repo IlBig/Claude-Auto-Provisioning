@@ -109,7 +109,7 @@ Per ciascun esperto, 2-3 domande di verifica rapide:
 I due esperti valutano insieme i risultati della ricerca (cataloghi + live):
 - L'esperto di dominio indica quali componenti sono più rilevanti per il settore del progetto
 - L'esperto tecnico valuta qualità, compatibilità con lo stack, e priorità di installazione
-- Insieme determinano l'ordinamento e la pre-selezione (`[x]` vs `[ ]`)
+- Insieme determinano l'ordinamento e quali componenti contrassegnare come `(Recommended)`
 
 L'analisi è **interna** — non viene mostrata separatamente all'utente.
 
@@ -117,24 +117,21 @@ L'analisi è **interna** — non viene mostrata separatamente all'utente.
 
 **Escludi** i componenti già installati (rilevati in Fase 1.1).
 
-**Se ci sono risultati**, presenta una lista numerata:
+**Se ci sono risultati**, mostra un riepilogo testuale dei componenti trovati:
 
 ```
 COMPONENTI TROVATI PER: [esigenza]
 =====================================
 
-  [x]  1. [nome] — [tipo: MCP/Skill/Hook/Plugin]
-          [descrizione breve]
-          Motivazione: [perché è pertinente all'esigenza]
-  [x]  2. [nome] — [tipo]
-          [descrizione breve]
-          Motivazione: [perché è pertinente]
-  [ ]  3. [nome] — [tipo]
-          [descrizione breve]
-          Nota: [quando è utile, perché non pre-selezionato]
-
-→ Digita i numeri separati da virgola per cambiare stato, invio per confermare.
+  1. [nome] — [tipo: MCP/Skill/Hook/Plugin]
+     [descrizione breve]
+  2. [nome] — [tipo]
+     [descrizione breve]
+  3. [nome] — [tipo]
+     [descrizione breve]
 ```
+
+La selezione interattiva avviene nella FASE 3 tramite AskUserQuestion.
 
 **Se non ci sono risultati**:
 ```
@@ -150,12 +147,50 @@ Suggerimenti:
 
 ## FASE 3: Selezione e Installazione
 
-### 3.1 Toggle e Conferma
+### 3.1 Selezione con AskUserQuestion
 
-Stesse regole della Fase 3 di auto-provision:
-1. **Toggle individuale**: numeri separati da virgola per invertire stato
-2. **Iterativo**: dopo toggle, mostra lista aggiornata
-3. **Conferma**: invio vuoto o "ok"/"conferma" per procedere
+Presenta i componenti trovati usando `AskUserQuestion`. Il comportamento dipende dal numero di risultati:
+
+#### Caso: singolo componente trovato
+
+Usa `AskUserQuestion` con una domanda semplice (NO multiSelect):
+
+```
+AskUserQuestion:
+  question: "Vuoi installare [nome-componente]?"
+  header: "Installa"
+  multiSelect: false
+  options:
+    - label: "Sì, installa"
+      description: "[breve descrizione di cosa fa il componente]"
+    - label: "No, cerca alternative"
+      description: "Torno a cercare altri componenti per la tua esigenza"
+```
+
+Se l'utente sceglie "No, cerca alternative" o usa "Other", torna alla FASE 2 e amplia la ricerca con termini diversi o categorie adiacenti.
+
+#### Caso: componenti multipli trovati (2+)
+
+Usa `AskUserQuestion` con `multiSelect: true`, raggruppando per categoria se necessario (stesse regole della Fase 3 di auto-provision):
+
+- **Header**: categoria del componente (`"MCP Server"`, `"Hook"`, `"Skill"`, `"Plugin"`)
+- **Label**: `"nome (Recommended)"` per i raccomandati, altrimenti solo `"nome"`. Raccomandati per primi.
+- **Description**: breve descrizione funzionale (cosa fa il componente)
+- **Categorie vuote**: omesse
+- **Max 4 opzioni per domanda, max 4 domande per chiamata**
+
+Se tutti i componenti sono della stessa categoria, usa una sola domanda.
+
+#### Riepilogo post-selezione
+
+Dopo la selezione, mostra un riepilogo testuale prima di procedere all'installazione:
+
+```
+Componenti selezionati:
+  ✓ [nome] — [tipo]
+
+Procedo con l'installazione.
+```
 
 ### 3.2 Installazione Resiliente
 
