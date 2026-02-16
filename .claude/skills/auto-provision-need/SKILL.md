@@ -82,7 +82,32 @@ WebSearch: "claude code [tipo-componente] [esigenza]"
 
 Se le fonti live non sono raggiungibili, usa solo i cataloghi statici. I dati live hanno precedenza.
 
-### 2.3 Filtraggio e Presentazione
+### 2.3 Consultazione Esperto Rapida
+
+Prima di filtrare e presentare i risultati, esegui una consultazione rapida con due esperti virtuali per valutare meglio la pertinenza dei componenti trovati.
+
+#### Identificazione (profili brevi)
+
+- **Esperto di Dominio**: Basandoti sul README e sullo scopo del progetto, identifica in 1 riga lo specialista di settore più appropriato (es. "consulente finanziario per app di budgeting", "esperto ristorazione per piattaforma prenotazioni")
+- **Esperto Tecnico**: Basandoti sullo stack e sull'esigenza espressa dall'utente, identifica in 1 riga lo specialista tecnico (es. "security engineer Node.js", "DevOps engineer specializzato container")
+
+#### Verifica Rapida
+
+Per ciascun esperto, 2-3 domande di verifica rapide:
+- "Il profilo scelto è pertinente all'esigenza specifica dell'utente?"
+- "C'è un profilo più adatto per questo contesto?"
+- Rispondi brevemente e aggiusta se necessario
+
+#### Valutazione Congiunta
+
+I due esperti valutano insieme i risultati della ricerca (cataloghi + live):
+- L'esperto di dominio indica quali componenti sono più rilevanti per il settore del progetto
+- L'esperto tecnico valuta qualità, compatibilità con lo stack, e priorità di installazione
+- Insieme determinano l'ordinamento e la pre-selezione (`[x]` vs `[ ]`)
+
+L'analisi è **interna** — non viene mostrata separatamente all'utente.
+
+### 2.4 Filtraggio e Presentazione
 
 **Escludi** i componenti già installati (rilevati in Fase 1.1).
 

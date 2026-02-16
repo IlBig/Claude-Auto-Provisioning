@@ -238,6 +238,65 @@ See [bmad-modules-catalog.md](bmad-modules-catalog.md)
 
 **Combina** i risultati live con i cataloghi statici. I dati live hanno precedenza — se un tool è stato aggiornato, deprecato o sostituito, usa le informazioni più recenti.
 
+### 2.3 Consultazione Esperti Virtuali
+
+Pattern: **Self-Reflection → Self-Verification → Dual Expert Role-Play → Component Evaluation**
+
+Prima di presentare il piano all'utente, consulta due esperti virtuali per una valutazione più profonda dei componenti da proporre.
+
+#### Step 1: Identificazione Esperti
+
+**Esperto di Dominio**: Basandoti su README, descrizione e scopo del progetto, identifica lo specialista del settore/argomento. Deve essere un profilo specifico, non generico. Esempi:
+- App gestione budget familiare → consulente finanziario specializzato in risparmio familiare
+- Piattaforma prenotazioni ristorante → imprenditore nel settore ristorazione
+- App fitness → personal trainer e nutrizionista sportivo
+- Piattaforma e-commerce → esperto retail e supply chain manager
+
+**Esperto Tecnico**: Basandoti sulle lacune rilevate nell'analisi (sicurezza, qualità codice, performance, UX, prodotto), identifica lo specialista tecnico più pertinente. Profilo specifico e contestualizzato allo stack del progetto. Esempi:
+- Lacune sicurezza in app Node.js → security engineer specializzato in Node.js e OWASP
+- Problemi performance in app React → frontend performance engineer esperto di React rendering
+- Carenze DevOps → SRE/DevOps engineer specializzato nello stack rilevato
+
+#### Step 2: Verifica della Scelta
+
+Per **ciascun esperto**, esegui un ciclo di self-verification:
+1. Genera 3-5 domande di verifica per confermare che il profilo scelto sia il più appropriato
+2. Rispondi a ciascuna domanda separatamente
+3. Rivedi la scelta: se le risposte rivelano un profilo più adatto, aggiorna la selezione
+
+Esempi di domande di verifica:
+- "Questo esperto ha le competenze per valutare le specificità del dominio/stack?"
+- "C'è un profilo più specializzato per questo contesto?"
+- "L'esperto copre le aree di lacuna principali rilevate?"
+
+#### Step 3: Consultazione Congiunta
+
+1. **L'esperto di dominio** analizza il progetto dalla prospettiva del settore:
+   - Quali funzionalità/flussi sono critici nel dominio?
+   - Quali standard di settore andrebbero rispettati?
+   - Quali integrazioni esterne sono tipiche nel settore?
+   - Quali sono le priorità dell'utente finale in questo dominio?
+
+2. **L'esperto tecnico**, informato dalle esigenze di dominio emerse, valuta i cataloghi:
+   - Riceve: profilo progetto completo + insight dell'esperto di dominio + tutti i risultati dei cataloghi (statici e live)
+   - Valuta ogni componente candidato secondo: rilevanza per il progetto, priorità di installazione, sinergie con altri componenti, motivazione tecnica
+
+3. **Insieme** producono la lista ordinata per priorità, decidendo:
+   - Quali componenti sono fortemente raccomandati (`[x]`)
+   - Quali sono opzionali (`[ ]`)
+   - L'ordine di presentazione nella lista
+
+#### Output della Consultazione
+
+L'analisi degli esperti è **interna** (non viene mostrata come sezione separata all'utente). Il risultato influenza direttamente la selezione e l'ordinamento dei componenti nella Fase 3.
+
+All'utente si mostra nel report della Fase 3, nella sezione piano, subito dopo l'ANALISI QUALITATIVA:
+```
+ESPERTI CONSULTATI:
+  Dominio: [profilo specifico] → [1 riga insight chiave]
+  Tecnico: [profilo specifico] → [1 riga focus valutazione]
+```
+
 ---
 
 ## FASE 3: Presentazione Piano e Conferma Individuale
@@ -260,6 +319,10 @@ ANALISI QUALITATIVA:
   Prestazioni:   [█████░░░░░] 50% — [nota breve]
   UX:            [███████░░░] 70% — [nota breve]
   Prodotto:      [████░░░░░░] 40% — [nota breve]
+
+ESPERTI CONSULTATI:
+  Dominio: [profilo specifico] → [1 riga insight chiave]
+  Tecnico: [profilo specifico] → [1 riga focus valutazione]
 
 FILE CHE VERRANNO GENERATI:
 ---------------------------
